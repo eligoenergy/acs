@@ -1,0 +1,24 @@
+<div class="single_column">
+  <%= form_for @user_session, :url => user_session_path do |f| %>
+    <% if @user_session.errors.any? %>
+      <div id="error_explanation">
+        <h2>Oops! You must have entered your username or password incorrectly.</h2>
+      </div>
+    <% end %>
+    <div class="field">
+      <%= f.label :login %>
+      <%= f.text_field :login, :autofocus => 'true' %>
+    </div>
+    <div class="field">
+      <%= f.label :password %>
+      <%= f.password_field :password %>
+    </div>
+    <div>
+      <%= f.check_box :remember_me %>
+      <%= f.label :remember_me, "Remember Me?" %>
+    </div>
+    <div class="actions">
+      <%= f.submit "Login", :class => 'awesome_button' %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,13 @@
+mysql:
+  adapter: localhost
+  database: acs_development
+  username: root
+  password:
+
+destination:
+  file: acs_psql.sql
+  postgres:
+    hostname: localhost
+    username: postgres
+    password: 
+    database: non

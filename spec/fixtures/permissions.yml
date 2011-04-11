@@ -1,0 +1,36 @@
+cnu_portal_executive:
+  permission_type: portal_executive
+  resource: cnu_portal
+cnu_portal_admin:
+  permission_type: portal_admin
+  resource: cnu_portal
+uk_portal_executive:
+  permission_type: portal_executive
+  resource: uk_portal
+uk_portal_admin:
+  permission_type: portal_admin
+  resource: uk_portal
+cyberark_access:
+  permission_type: application_access
+  resource: cyberark
+cyberark_admin:
+  permission_type: application_admin
+  resource: cyberark
+wiki:
+  permission_type: application_access
+  resource: wiki
+wiki_admin:
+  permission_type: application_admin
+  resource: wiki
+jira:
+  permission_type: application_access
+  resource: jira
+jira_admin:
+  permission_type: application_admin
+  resource: jira
+acunote:
+  permission_type: application_access
+  resource: acunote
+acunote_admin:
+  permission_type: application_admin
+  resource: acunote

@@ -1,0 +1,8 @@
+
+javascripts/main.js
+----------------
+javascripts/main.js
+modernizr-1.6.min.js
+jquery-ui-1.8.2.js
+placeholder.jquery.js
+rails.js

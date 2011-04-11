@@ -1,0 +1,35 @@
+<div class="slide_out">
+  <div class="slide_out_section">
+  <h5 class="section_header">Comments</h5>
+  <div class="slide_out_article">
+    <% if @access_request.notes.blank? %>
+      <p>This access request does not have any comments</p>
+    <% else %>
+      <% @access_request.notes.each do |note| %>
+        <h6><%= note.user.full_name %> commented at <%= note.created_at.to_s(:short) %></h6>
+        <p><%= note.body %></p>
+      <% end %>
+    <% end %>
+  </div>
+  </div>
+  <% unless (@access_request.waiting_for_manager? && @access_request.manager == current_user) || (@access_request.waiting_for_resource_owner? && @access_request.resource_owner == current_user) %>
+  <div class="slide_out_section">
+  <h5 class="section_header">Add a Comment</h5>
+    <div class="slide_out_article" id="access_request_note">
+      <% if @access_request.notes_are_disabled? %>
+        <p>Comments are disabled for access requests that were completed more than 15 minutes ago</p>
+      <% else %>
+        <%= form_for [@access_request,@note] do |f| %>
+          <div class="field">
+            <%= f.text_area :body %>
+          </div>
+          <div class="actions">
+            <%= f.submit "Create Note", :class => 'awesome_button' %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+  <% end %>
+</div>
+</div>

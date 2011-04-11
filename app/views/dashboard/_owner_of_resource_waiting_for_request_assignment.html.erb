@@ -1,0 +1,3 @@
+<% unless @requests_for_my_resources.blank? %>
+  <%= render :partial => 'access_requests/table', :locals => { :access_requests => @requests_for_my_resources, :caption => 'Current Unassigned Access Requests requiring Resource Owner Assignment and Approval' } %>
+<% end %>

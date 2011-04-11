@@ -1,0 +1,3 @@
+types:
+  user: [:first_name, :last_name, :start_date, :department, :job_title, :manager, :type]
+  backfill: [:first_name, :last_name, :login, :start_date, :department, :job_title, :manager, :type]

@@ -1,0 +1,2 @@
+run command below from public_assets dir to properly build js files
+../../requirejs/build/build.sh app.build.js

@@ -1,0 +1,68 @@
+Access Control System
+=====================
+
+Overview
+
+The Access Control System is a webapp to allow the creation, modification, and termination of employee access as well as employees to request their own system access.
+
+There are several main workflows for granting access to users.
+
+New Hire Workflow
+    1. New Hire From Hiring Manager
+        Steps: Hiring manager submits new user (via form or CSV) -> requests submitted to:
+            HR Approval ->  Helpdesk -> Complete
+            HR Denial -> Flag rejected -> Complete
+    2) New Hire From Human Resources
+        Steps: HR submits a new user (via form or CSV) -> requests submitted to:
+            Helpdesk -> Complete
+
+Rehire workflow -
+    1) Rehire from Human Resources
+        Steps: Click "Rehire" button -> Choose new job/department/manager if necessary -> submit Grant requests to:
+            Helpdesk -> Complete
+
+Transfer (promote-demote) workflow -
+    1) Hiring Manager transfer
+        Steps: Click "Transfer" button -> Choose new job/department/manager if necessary -> submit Grant requests to:
+            HR Approval -> Helpdesk -> Complete
+            HR Denial -> Complete
+
+    2) Human Resources transfer
+        Steps: Click "Transfer" button -> Choose new job/department/manager if necessary -> submit Grant requests to:
+            Helpdesk -> Complete
+
+Termination Workflow -
+    1) Termination from Hiring Manager
+        Steps: Click "Terminate" button -> Asks for confirmation -> submit Revoke requests to:
+            HR Approval -> Helpdesk -> Complete
+            HR Denial -> Complete
+    2) Termination from Human Resources
+         Steps: Click "Terminate" button -> Asks for confirmation -> submit Revoke requests to:
+            Helpdesk -> Complete
+
+Request Workflow -
+    1) Request from end user (Self-request)
+        Steps: Click "Request" button -> select access -> submit Grant requests to:
+            Manager Approval -> Owner Approval -> HR Approval -> Helpdesk -> Complete
+            Manager Approval -> Owner Approval -> HR Denial -> Complete
+            Manager Approval -> Owner Denial -> Complete
+            Manager Denial -> Complete
+
+    2) Request from manager (manager request)
+        Steps: Click "Request" button -> select access -> submit Grant requests to:
+            Owner Approval -> HR Approval -> Helpdesk -> Complete
+            Owner Approval -> HR Denial -> Complete
+            Owner Denial -> Complete
+
+    3) Request from owner (owner request)
+        Steps: Click "Request" button -> select access -> submit Grant requests to:
+            HR Approval -> Helpdesk -> Complete
+            HR Denial -> Complete
+
+Revoke workflow -
+    1) Revoke from Hiring Manager
+        Steps: Hiring Manager Selects access to revoke -> submits Revoke requests to:
+            Helpdesk -> Complete
+    2) Revoke from Resource Owner
+        Steps: Owner selects access to revoke -> submits Revoke requests to:
+            Hiring Manager -> Helpdesk -> Complete

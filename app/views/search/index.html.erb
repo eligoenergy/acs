@@ -1,0 +1,5 @@
+<h1><%= pluralize(@results.total_entries, "Search Result") %> for <%= params[:q] %></h1>
+
+<% @results_grouping.each_pair do |klass, results| %>
+  <%= render :partial => "admin/#{klass.to_s.tableize}/table", :locals => { :items => results, :item_type => klass.to_s.titleize } %>
+<% end %>

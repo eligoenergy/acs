@@ -1,0 +1,252 @@
+timothyho:
+  first_name: Timothy
+  last_name: Ho
+  login: timothyho
+  email: timothyho@example.com
+  current_state: active
+  roles: public
+  job: president
+  manager_flag: true
+  company: example
+  employment_type: full_time
+  crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
+  password_salt: u3xGieFLNTS91zGf1oj2
+  lft: 1
+  rgt: 29
+rcooper:
+  first_name: Roland
+  last_name: Cooper
+  login: rcooper
+  email: rcooper@example.com
+  current_state: active
+  roles: admin
+  job: opssupport
+  manager: timothyho
+  company: example
+  employment_type: full_time
+  crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
+  password_salt: u3xGieFLNTS91zGf1oj2
+  manager_flag: true
+  lft: 2
+  rgt: 5
+dengle:
+  first_name: Dan
+  last_name: Engle
+  login: dengle
+  email: dengle@example.com
+  current_state: active
+  roles: admin
+  job: opssupport
+  manager: rcooper
+  permissions: cnu_portal_executive, jira_admin, acunote_admin
+  company: example
+  employment_type: full_time
+  crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
+  password_salt: u3xGieFLNTS91zGf1oj2
+  lft: 3
+  rgt: 4
+mgroulx:
+  first_name: Marc
+  last_name: Groulx
+  login: mgroulx
+  email: mgroulx@example.com
+  current_state: active
+  roles: public
+  job: product_mgmt_director
+  manager: timothyho
+  manager_flag: true
+  company: example
+  employment_type: full_time
+  crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
+  password_salt: u3xGieFLNTS91zGf1oj2
+  lft: 6
+  rgt: 7
+nott:
+  first_name: Nadine
+  last_name: Ott
+  login: nott
+  email: nott@example.com
+  current_state: active
+  roles: hr
+  job: recruiting_coordinator
+  manager: timothyho
+  manager_flag: true
+  company: example
+  employment_type: full_time
+  crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
+  password_salt: u3xGieFLNTS91zGf1oj2
+  lft: 8
+  rgt: 9
+mstreet:
+  first_name: Marvin
+  last_name: Street
+  login: mstreet
+  email: mstreet@example.com
+  current_state: active
+  roles: help_desk, admin
+  job: help_desk_manager
+  manager: timothyho
+  manager_flag: true
+  company: example
+  employment_type: full_time
+  crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
+  password_salt: u3xGieFLNTS91zGf1oj2
+  lft: 10
+  rgt: 15
+jserrano:
+  first_name: Jaime
+  last_name: Serrano
+  login: jserrano
+  email: jserrano@example.com
+  current_state: active
+  roles: help_desk
+  job: help_desk_member
+  manager: mstreet
+  manager_flag: false
+  company: example
+  employment_type: full_time
+  crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
+  password_salt: u3xGieFLNTS91zGf1oj2
+  lft: 11
+  rgt: 12
+rhook:
+  first_name: Rob
+  last_name: Hook
+  login: rhook
+  email: rhook@example.com
+  current_state: active
+  roles: help_desk
+  job: help_desk_member
+  manager: mstreet
+  manager_flag: true
+  company: example
+  employment_type: full_time
+  crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
+  password_salt: u3xGieFLNTS91zGf1oj2
+  lft: 13
+  rgt: 14
+odolchenko:
+  first_name: Olga
+  last_name: Dolchenko
+  login: odolchenko
+  email: odolchenko@example.com
+  current_state: active
+  roles: public
+  job: s_and_o_uk
+  manager: timothyho
+  manager_flag: true
+  company: example
+  employment_type: full_time
+  crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
+  password_salt: u3xGieFLNTS91zGf1oj2
+  lft: 16
+  rgt: 28
+alee:
+  first_name: Alice
+  last_name: Lee
+  login: alee
+  email: alee@example.com
+  current_state: active
+  roles: public
+  job: s_and_o_uk
+  manager: odolchenko
+  manager_flag: false
+  company: example
+  employment_type: full_time
+  crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
+  password_salt: u3xGieFLNTS91zGf1oj2
+  lft: 17
+  rgt: 18
+jrocket:
+  first_name: Johnny
+  last_name: Rocket
+  login: jrocket
+  email: jrocket@example.com
+  current_state: suspended
+  roles: public
+  job: s_and_o_uk
+  manager: odolchenko
+  manager_flag: false
+  company: example
+  permissions: wiki
+  employment_type: full_time
+  terminated_by: odolchenko
+  crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
+  password_salt: u3xGieFLNTS91zGf1oj2
+  lft: 19
+  rgt: 20
+tguy:
+  first_name: That
+  last_name: Guy
+  login: tguy
+  email: tguy@example.com
+  current_state: pending
+  roles: public
+  job: s_and_o_uk
+  manager: odolchenko
+  manager_flag: false
+  company: example
+  employment_type: full_time
+  submitted_by: odolchenko
+  start_date: <%= Date.today - 5 %>
+  crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
+  password_salt: u3xGieFLNTS91zGf1oj2
+  lft: 21
+  rgt: 22
+jfaceless:
+  first_name: Jane
+  last_name: Faceless
+  login: jfaceless
+  email: jfaceless@example.com
+  current_state: active
+  roles: public
+  job: s_and_o_uk
+  manager: odolchenko
+  manager_flag: false
+  company: example
+  employment_type: full_time
+  submitted_by: nott
+  start_date: <%= Date.today + 5 %>
+  crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
+  password_salt: u3xGieFLNTS91zGf1oj2
+  lft: 23
+  rgt: 24
+egarret:
+  first_name: Emily
+  last_name: Garret
+  login: egarret
+  email: egarret@example.com
+  current_state: terminated
+  roles: public
+  job: s_and_o_uk
+  manager: odolchenko
+  manager_flag: false
+  company: example
+  employment_type: full_time
+  terminated_by: nott
+  start_date: <%= Date.today - 25 %>
+  end_date: <%= Date.today %>
+  crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
+  password_salt: u3xGieFLNTS91zGf1oj2
+  lft: 25
+  rgt: 26
+holajuwon:
+  first_name: Hakeem
+  last_name: Olajuwon
+  login: holajuwon
+  email: holajuwon@example.com
+  current_state: terminated
+  roles: public
+  job: s_and_o_uk
+  manager: odolchenko
+  manager_flag: false
+  company: example
+  employment_type: full_time
+  terminated_by: nott
+  start_date: <%= Date.today - 25 %>
+  end_date: <%= Date.today %>
+  crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
+  password_salt: u3xGieFLNTS91zGf1oj2
+  lft: 27
+  rgt: 28
+

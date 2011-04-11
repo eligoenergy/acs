@@ -1,0 +1,21 @@
+<h1>Listing admin_permission_types</h1>
+
+<table>
+  <tr>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @admin_permission_types.each do |admin_permission_type| %>
+  <tr>
+    <td><%= link_to 'Show', admin_permission_type %></td>
+    <td><%= link_to 'Edit', edit_admin_permission_type_path(admin_permission_type) %></td>
+    <td><%= link_to 'Destroy', admin_permission_type, :confirm => 'Are you sure?', :method => :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Permission type', new_admin_permission_type_path %>

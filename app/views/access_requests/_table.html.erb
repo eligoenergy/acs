@@ -1,0 +1,35 @@
+<fieldset class="display_info chunker_container">
+
+  <section class="request_table">
+    <header><%= caption %></header>
+    <table class="awesome_tables access_request_summary">
+    <tr>
+      <th class="request_date">Created</th>
+      <th>Action</th>
+      <th>Reason</th>
+      <th>Permissions</th>
+      <th>Resource</th>
+      <th>For</th>
+      <th>Creator</th>
+      <th>Current Assignee</th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+    <% access_requests.each do |access_request| %>
+      <tr>
+        <td><%= access_request.created_at.to_s(:short) %></td>
+        <td class="<%= 'important_thing' if access_request.for_termination? %>"><%= access_request.request_action %></td>
+        <td class="<%= 'important_thing' if access_request.for_termination? %>"><%= access_request.reason %></td>
+        <td><%= access_request.permission_types.join(', ') %></td>
+        <td><%= access_request.try(:resource).try(:name) %></td>
+        <td><%= access_request.user.full_name %></td>
+        <td><%= access_request.created_by.full_name %></td>
+        <td><%= access_request.try(:current_worker).try(:full_name) %></td>
+        <td><%= access_request.current_state %></td>
+        <td class="action_arrow"><%= link_to image_tag('icons/bullet_go.png'), access_request_path(access_request), :id => "dashboard_access_request_#{access_request.id}" %></td>
+      </tr>
+    <% end %>
+    <%= table_info_row access_requests, :colspan => 10, :item_type => 'Access Request' %>
+    </table>
+  </section>  
+</fieldset>
