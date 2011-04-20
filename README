@@ -66,3 +66,10 @@ Revoke workflow -
     2) Revoke from Resource Owner
         Steps: Owner selects access to revoke -> submits Revoke requests to:
             Hiring Manager -> Helpdesk -> Complete
+            
+Note
+This project should be considered alpha sofware. While it currently is working for Enova, there
+many known issues that are still being addressed and worked on. Those higher up on the totem
+pole pushed us to release this now, instead of making it more suitable for public consumption,
+because they know we could play that game for awhile. There is a major restructing of access
+requests coming right around the corner too.
