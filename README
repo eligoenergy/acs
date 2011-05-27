@@ -1,20 +1,67 @@
-Access Control System
-=====================
+TODO
+Look into creating app/validators and app/state_machine directories. Could possible clean things up very nicely
+Properly handle manager approves request for resources that have no owner
+Fix users with no manager create an exception when creating new access request
+add more timestamps to access_request for each step
+figure out why tables aren't getting border radius applied
+Change permissions list so resources are broken up by resource group
+Don't allow multiple access requests for same resource/permissions to occur at the same time
+Don't allow acf's for resources with no owners, send email to admin if a request is made
+Find out how to use view helpers in mailer views
+Make sure a manager who is also a resource owner is not able to complete both approval steps
+When a manager creates a request for another user, the user needs to be notified of completion
+Need to move 'terminate user' to a better spot, right below logout button is not good
+When all permission requests are denied, should access request state be completed or request_denied?
+During a manager approve or deny process
+	Remember what action/s was chosen in the form if request doesn't save
+Need to refactor manager_approval and resource_owner_approval code
+Help desk member should not be able to assign requests to them if the request is to revoke their access
+When working on a request that is in progress, help desk members need more details to display about what the request is asking for
+Access Request status' need to be renamed so they are more consistent and can be used consistently (past/present tense) without having to deal with all the different english ways of saying things
+  e.g. request_denied needs to be renamed denied so the access_request_summary reads correctly
+      Your request for xxx has been denied, instead of, Your request for xxx has been request denied.
+      ...be granted and it is sent to help desk, should be, ...be granted and it is waiting for help desk assignment (reads better and is consistent with manager and resource owner messages)
+Need to go through css tables and make sure they are all using updated awesome_tables css
+Need to rename the approved_by_manager_at and approved_by_resource_owner at to completed_by_x_at on the permission_requests table so it makes more sense when a request is denied
 
-Overview
 
-The Access Control System is a webapp to allow the creation, modification, and termination of employee access as well as employees to request their own system access.
+WORKFLOWS:
 
-There are several main workflows for granting access to users.
+1. User requests permission for themselves
+2. Request moves to manager.
+  On approval: Request moves to resource owner, notify user of progress.
+  On denial: Stop processing request, notify user of denial 
+3. Resource owner recieves request
+  On approval: Request moves to help desk, notify user of progress.
+  On denial: Stop processing request, notify user of denial.
+4. Help desk recieves request, completes it, notifies user of request.
 
-New Hire Workflow
-    1. New Hire From Hiring Manager
+EVENTS TO NOTIFY USERS OF
+assigned as resource owner
+user tries to create access request to resource with no owner
+
+
+
+FIXED
+HR cant create new users at this point...fix it
+(mostly fixed) rename access_control/show#partials to name of aasm_state
+check out created by user note being viewed by manager
+Can't go back and edit a user in step 1 after proceeding to step 2
+remove permission_requests.manager_id? looks like access_requests.manager_id should do the trick
+
+WONT DO
+If a resource owner creates a revoke access request, the users manager should have to approve it-removed this ability, only managers can remove access
+
+
+Workflows:
+New Hire Workflow -
+    1) New Hire From Hiring Manager
         Steps: Hiring manager submits new user (via form or CSV) -> requests submitted to:
-            HR Approval ->  Helpdesk -> Complete
+            HR Approval ->  Helpdesk -> HR -> Complete
             HR Denial -> Flag rejected -> Complete
     2) New Hire From Human Resources
         Steps: HR submits a new user (via form or CSV) -> requests submitted to:
-            Helpdesk -> Complete
+            Helpdesk -> HR -> Complete
 
 Rehire workflow -
     1) Rehire from Human Resources
@@ -43,12 +90,12 @@ Termination Workflow -
 Request Workflow -
     1) Request from end user (Self-request)
         Steps: Click "Request" button -> select access -> submit Grant requests to:
-            Manager Approval -> Owner Approval -> HR Approval -> Helpdesk -> Complete
-            Manager Approval -> Owner Approval -> HR Denial -> Complete
-            Manager Approval -> Owner Denial -> Complete
-            Manager Denial -> Complete
+            Hiring Manager Approval -> Owner Approval -> HR Approval -> Helpdesk -> Complete
+            Hiring Manager Approval -> Owner Approval -> HR Denial -> Complete
+            Hiring Manager Approval -> Owner Denial -> Complete
+            Hiring Manager Denial -> Complete
 
-    2) Request from manager (manager request)
+    2) Request from hiring manager (manager request)
         Steps: Click "Request" button -> select access -> submit Grant requests to:
             Owner Approval -> HR Approval -> Helpdesk -> Complete
             Owner Approval -> HR Denial -> Complete
@@ -66,10 +113,3 @@ Revoke workflow -
     2) Revoke from Resource Owner
         Steps: Owner selects access to revoke -> submits Revoke requests to:
             Hiring Manager -> Helpdesk -> Complete
-            
-Note
-This project should be considered alpha sofware. While it currently is working for Enova, there
-many known issues that are still being addressed and worked on. Those higher up on the totem
-pole pushed us to release this now, instead of making it more suitable for public consumption,
-because they know we could play that game for awhile. There is a major restructing of access
-requests coming right around the corner too.

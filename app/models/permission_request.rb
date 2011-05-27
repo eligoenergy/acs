@@ -8,7 +8,7 @@ class PermissionRequest < ActiveRecord::Base
 
   attr_accessible :approved, :permission_id, :approved_by_manager_at, :approved_by_manager, :approved_by_resource_owner_at, :approved_by_resource_owner
 
-  delegate :by_manager_for_subordinate?, :to => :access_request
+  delegate :created_by_manager_for_subordinate?, :to => :access_request
   
   scope :approved_by_manager, where(:approved_by_manager => true)
   scope :denied_by_manager, where('approved_by_manager is not null and approved_by_manager = ?', false)
@@ -17,27 +17,31 @@ class PermissionRequest < ActiveRecord::Base
   scope :denied_by_resource_owner, where('approved_by_resource_owner is not null and approved_by_resource_owner = ?', false) #:approved_by_resource_owner => false)
   scope :granted, where(:permission_granted => true)
 
-  def approval(val)
+  def approval(reason, val)
     return false if val.nil?
-    send(self.access_request.current_state, self.access_request.reason, val)
+    send(self.access_request.current_state, reason, val)
     self.save
   end
   
   def pending(reason, val)
     case reason
     when 'standard'
-      if self.by_manager_for_subordinate?
+      if self.created_by_manager_for_subordinate?
         manager_decision(val)
       end
+    when 'revoke'
+      manager_decision(val)
     when 'new_hire'
-      if self.by_manager_for_subordinate?
+      if self.created_by_manager_for_subordinate?
         manager_decision(val, self.created_at)
       end
       hr_decision(val)
+    when 'rehire'
+      hr_decision(true)
     when 'termination'
-      if self.access_request.created_by.hr?
+      if self.access_request.request.created_by.hr?
         hr_decision(val)
-      elsif self.by_manager_for_subordinate?
+      elsif self.created_by_manager_for_subordinate?
         manager_decision(val)
       else
         raise "pending termination requests must be created by hr or the employees manager"

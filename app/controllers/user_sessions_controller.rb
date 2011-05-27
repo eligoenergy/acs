@@ -8,7 +8,8 @@ class UserSessionsController < ApplicationController
 
   def create
     # TODO this env? code doesn't look like it should belong he
-    if Rails.env.development? || Rails.env.staging?
+    unless User.ldap_active?
+      logger.info { "\n****\n* ldap is not active" }
       users = params[:user_session][:login].split('-')
       session_user = User.find_by_login(users[1]) unless users[1].blank?
       unless users[1].blank?
@@ -17,7 +18,7 @@ class UserSessionsController < ApplicationController
       end
     end
     @user_session = UserSession.new(params[:user_session])
-
+    logger.info { "\n****\n* @user_session: #{@user_session.inspect}" }
     if @user_session.save
       if session_user
         @user_session = UserSession.create(session_user)

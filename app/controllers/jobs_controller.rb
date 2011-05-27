@@ -20,4 +20,5 @@ class JobsController < ApplicationController
       format.xml  { render :xml => @job }
     end
   end
+    
 end

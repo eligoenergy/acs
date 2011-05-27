@@ -11,6 +11,7 @@ class AccessRequest < ActiveRecord::Base
   }
   # FIXME there shouldn't be a revoke/revoke action/reason. It should
   # be revoke/standard but it doesn't seem to work right atm
+  # TODO remove reasons here after request groupings complete
   REASONS = {
     :standard => 'standard',
     :revoke => 'revoke',
@@ -21,8 +22,7 @@ class AccessRequest < ActiveRecord::Base
   }
 
   belongs_to :resource
-  belongs_to :user
-  belongs_to :created_by, :class_name => 'User'
+  belongs_to :request
   belongs_to :current_worker, :class_name => 'User'
   belongs_to :manager, :class_name => 'User'
   belongs_to :resource_owner, :class_name => 'User'
@@ -33,17 +33,21 @@ class AccessRequest < ActiveRecord::Base
   has_many :permissions, :through => :permission_requests
   has_many :notes, :as => :notable, :dependent => :destroy, :order => 'notes.created_at asc'
 
-  acts_as_change_logger :ignore => [:created_by_id, :historical, :request_action, :user_id, :completed_at, :created_at, :updated_at, :manager_id, :resource_owner_id, :for_new_user]
+  acts_as_change_logger :ignore => [:created_by_id, :historical, :request_action, :user_id, :completed_at, :created_at, :updated_at, :manager_id, :resource_owner_id, :for_new_user, :position]
 
   accepts_nested_attributes_for :permission_requests #, :reject_if => Proc.new { |permission_request| }
   accepts_nested_attributes_for :notes #, :reject_if => Proc.new { |note| note[:body].blank? }
 
+  delegate :user, :to => :request
+  delegate :created_by_manager_for_subordinate?, :to => :request
+  delegate :reason, :to => :request
+  
   attr_accessor :approved_by, :permission_ids, :current_user, :manager_approval_attributes, :validate_manager_approval, :resource_owner_approval_attributes, :validate_resource_owner_approval, :valid_note_required, :created_by_import, :created_by_transfer
 
   validates_with AccessRequests::Validator
 
   scope :unassigned_requests, where(:current_state => 'waiting_for_resource_owner_assignment')
-  scope :not_completed, where('access_requests.current_state not in (?) and completed_at is null', ['completed','denied', 'canceled'])
+  scope :not_completed, where('access_requests.current_state not in (?) and access_requests.completed_at is null', ['completed','denied', 'canceled'])
   scope :for_hr, where(:current_state => ['waiting_for_hr_assignment', 'waiting_for_hr']).order('created_at desc')
   scope :for_user_and_descendants, lambda { |user| where('user_id in (?)', user.self_and_descendants.map{|u| u.id }) }
   scope :current_worker, lambda { |user| where(:current_worker_id => user.id) }
@@ -73,7 +77,7 @@ class AccessRequest < ActiveRecord::Base
   aasm_state :pending
 
   aasm_state :waiting_for_manager,
-    :enter => :assign_to_manager,
+    :enter => :give_to_manager,
     :exit => :unassign_current_worker
 
   aasm_state :waiting_for_resource_owner,
@@ -81,15 +85,13 @@ class AccessRequest < ActiveRecord::Base
   aasm_state :waiting_for_help_desk
 
   aasm_state :waiting_for_resource_owner_assignment
-  aasm_state :waiting_for_help_desk_assignment,
-    :enter => :unassign_current_worker
+  aasm_state :waiting_for_help_desk_assignment
 
   aasm_state :canceled
-  aasm_state :completed,
-    :enter => :modify_permissions
+  aasm_state :completed
   aasm_state :denied
 
-  aasm_event :send_to_manager do
+  aasm_event :assign_to_manager do
     transitions(
       :from => :pending,
       :to => :waiting_for_manager,
@@ -110,14 +112,14 @@ class AccessRequest < ActiveRecord::Base
   end  
   aasm_event :send_to_resource_owners do
     transitions(
-      :from => :waiting_for_manager,
+      :from => [:waiting_for_manager, :pending],
       :to => :waiting_for_resource_owner_assignment,
       :guard => :approved_by_manager?
     )
     transitions(
       :from => :pending,
       :to => :waiting_for_resource_owner_assignment,
-      :guard => :by_manager_for_subordinate?
+      :guard => :created_by_manager_for_subordinate?
     )
   end
   aasm_event :send_to_help_desk do
@@ -143,9 +145,9 @@ class AccessRequest < ActiveRecord::Base
       :to => :waiting_for_resource_owner
     )
     transitions(
-    :from => :waiting_for_manager,
-    :to => :waiting_for_resource_owner,
-    :guard => :resource_has_one_owner?
+      :from => [:pending, :waiting_for_manager],
+      :to => :waiting_for_resource_owner,
+      :guard => :resource_has_one_owner?
     )
   end
   aasm_event :assign_to_help_desk do
@@ -180,10 +182,6 @@ class AccessRequest < ActiveRecord::Base
     )
   end
   
-  def reason?(reason)
-    self.reason.to_sym == reason
-  end
-  
   def permission_ids=(ids)
     ids.each do |id|
       self.permission_requests.build(:permission_id => id)
@@ -193,7 +191,7 @@ class AccessRequest < ActiveRecord::Base
   def manager_approval_attributes=(attributes)
     self.permission_requests.each do |permission_request|
       approved = attributes.delete(permission_request.id.to_s)
-      permission_request.approval(approved.nil? ? nil : approved[:approved])
+      permission_request.approval(self.request.reason, approved.nil? ? nil : approved[:approved])
     end
     self.validate_manager_approval = true
   end
@@ -205,7 +203,7 @@ class AccessRequest < ActiveRecord::Base
   def resource_owner_approval_attributes=(attributes)
     self.permission_requests.approved_by_manager.each do |permission_request|
       approved = attributes.delete(permission_request.id.to_s)
-      permission_request.approval(approved.nil? ? nil : approved[:approved])
+      permission_request.approval(self.request.reason, approved.nil? ? nil : approved[:approved])
     end
     self.validate_resource_owner_approval = true
   end
@@ -214,15 +212,27 @@ class AccessRequest < ActiveRecord::Base
     self.validate_resource_owner_approval ||= false
   end
 
-  def approve_all_permission_requests
+  # this method is used for access_request grouped in a request
+  # TODO this method needs to be turned back into not using a reason method
+  # the request is being created now before calling this, just too lazy to fix right now
+  def approve_all_permission_requests(reason)
     self.permission_requests.each do |permission_request|
-      permission_request.approval(true)
+      permission_request.approval(reason, true)
     end
   end
 
+  # TODO remove this method after completing access request groupings
   def grant_all_permissions
     self.permission_requests.each do |permission_request|
       permission_request.update_attribute(:permission_granted, true)
+    end
+  end
+
+  def approved_permission_requests
+    if self.request.goes_directly_to_help_desk?
+      self.permission_requests.all
+    else
+      self.resource_owner_approved_permissions
     end
   end
 
@@ -268,7 +278,7 @@ class AccessRequest < ActiveRecord::Base
   end
 
   def for_termination?
-    self.reason == AccessRequest::REASONS[:termination]
+    self.request.reason ==Request::REASONS[:termination]
   end
 
   def unassign_current_worker
@@ -298,43 +308,32 @@ class AccessRequest < ActiveRecord::Base
 
   def resource_owner_denied_permissions
     self.permission_requests.denied_by_resource_owner.all
-  end
+  end  
 
-  def by_manager_for_subordinate?
-    self.created_by.descendants.include?(self.user)
-  end
-
-  def assign_to_manager
-    self.manager = self.user.manager
-    self.current_worker = self.user.manager
-  end
-
-  def modify_permissions
-    if revocation?
-      self.user.permissions.delete(self.permission_requests.map(&:permission))
-    else
-      self.user.permissions << self.permission_requests.map(&:permission)
-    end
+  def give_to_manager
+    self.manager = self.request.user.manager
+    self.current_worker = self.request.user.manager
   end
 
   def revocation?
     self.request_action == ACTIONS[:revoke]
   end
 
+  # TODO, FIXME this can't work now
   def for_transfer?
-    self.reason == REASONS[:transfer]
+    self.request.reason == REASONS[:transfer]
   end
   
   def for?(this_user)
-    self.user == this_user
+    self.request.user == this_user
   end
 
   def created_for_self?
-    self.user == self.created_by
+    self.request.user == self.request.created_by
   end
 
   def created_by?(user)
-    self.created_by == user
+    self.request.created_by == user
   end
 
   def approved_by_manager?
@@ -360,17 +359,41 @@ class AccessRequest < ActiveRecord::Base
   end
 
   def past_manager_review?
-    ['waiting_for_resource_owner_assignment', 'waiting_for_resource_owner', 'waiting_for_help_desk_assignment', 'waiting_for_help_desk', 'completed', 'denied', 'canceled'].include?(self.current_state)
+    [
+      'waiting_for_resource_owner_assignment',
+      'waiting_for_resource_owner',
+      'waiting_for_help_desk_assignment',
+      'waiting_for_help_desk',
+      'completed',
+      'denied',
+      'canceled'
+    ].include?(self.current_state)
   end
 
   def past_resource_owner_review?
-    ['waiting_for_help_desk_assignment', 'waiting_for_help_desk', 'completed', 'denied', 'canceled'].include?(self.current_state)
+    [
+      'waiting_for_help_desk_assignment',
+      'waiting_for_help_desk',
+      'completed',
+      'denied',
+      'canceled'
+    ].include?(self.current_state)
+  end
+  
+  def should_warn?(user)
+    !finished? && !at_help_desk? && user.help_desk?  
+  end
+  
+  def assigned_to?(user)
+    self.current_worker == user
   end
   
   def assign_to(user)
     self.current_worker = user
-    case self.aasm_current_state      
-    when :waiting_for_manager, :waiting_for_resource_owner_assignment
+    case self.aasm_current_state
+    # TODO this is weird and unintuitive, maybe need to investigate order of saving objects
+    # and make this not as funky
+    when :pending, :waiting_for_manager, :waiting_for_resource_owner_assignment, :waiting_for_resource_owner
       self.resource_owner = user
       self.assign_to_resource_owner!
     when :waiting_for_help_desk_assignment
@@ -402,86 +425,15 @@ class AccessRequest < ActiveRecord::Base
   end
 
   def can_be_canceled_by?(user)
-    !self.finished? && (self.user == user || self.created_by == user || (self.waiting_for_help_desk? && user.help_desk? || self.user.ancestors.include?(user)))
+    !self.finished? && (self.request.user == user || self.request.created_by == user || (self.at_help_desk? && user.help_desk? || self.request.user.ancestors.include?(user)))
   end
   
-  # Email Reminder methods below
-  def self.age_check(request,type)
-    return true if request.updated_at < Time.now-(type.to_i*3600)
-    return false
-  end
-
-  def self.remind_managers
-    manager = [] # collect access requests waiting for manager approval
-    AccessRequest.waiting_for_manager.map { |a|
-    if age_check(a,'24')
-      manager << [a.current_worker, AccessRequest.waiting_for_manager.select { |a1| a1.current_worker == a.current_worker }.size ]
-    end
-    }
-    manager.uniq!
-    manager.each do |manager,count|
-      AccessRequestMailer.remind_manager_of_pending_acf(manager,count).deliver
-    end
-  end
-
-  def self.remind_owners
-    owner = [] # collect access requests waiting for owner approval
-    AccessRequest.waiting_for_resource_owner.map { |a|
-    if age_check(a,'24')
-      owner << [a.current_worker, AccessRequest.waiting_for_resource_owner.select { |a1| a1.current_worker == a.current_worker }.size, a.current_worker.resources.map {|re| re.name } ]
-    end
-    }
-    owner.uniq!
-    owner.each do |owner,count,resources|
-      AccessRequestMailer.remind_owner_of_pending_acf(owner,count,resources).deliver
-    end
-  end
-
-  def self.remind_helpdesk
-    help_desk = [] # collect access requests waiting for help desk completion
-    AccessRequest.waiting_for_help_desk.map { |a|
-      if age_check(a,'24')
-        help_desk << [a.current_worker, AccessRequest.waiting_for_help_desk.select { |a1| a1.current_worker == a.current_worker }.size ]
-      end
-    }
-    help_desk.uniq!
-    help_desk.each do |help_desk,count|
-      begin
-      AccessRequestMailer.remind_assignee_of_incomplete_acf(help_desk,count).deliver
-      rescue Exception => err
-        logger.error(err.message)
-      end
-    end
-  end
-
-  def self.annoy_resource_owners
-    waiting_for_owners = []
-    AccessRequest.waiting_for_resource_owner_assignment.each do |request|
-      waiting_for_owners << request.resource if age_check(request, '24')
-    end
-    waiting_for_owners.uniq.each do |resource|
-      resource.users.each do |owner|
-        AccessRequestMailer.remind_resource_owners_of_unassigned_acf(owner, resource.access_requests.not_completed.size, resource).deliver
-      end
-    end
-  end
-
-  def self.annoy_helpdesk
-    User.help_desk.each do |help_desk_user|
-      AccessRequestMailer.remind_help_desk_of_unassigned_acf(help_desk_user,AccessRequest.waiting_for_help_desk_assignment.size).deliver
-    end
-  end
-
-  def self.annoy_managers
-    one_up_reminders = [] # collect requests for escalation
-    AccessRequest.not_completed.map {|a|
-      if age_check(a,'48') && !a.current_worker_id.nil?
-        one_up_reminders << [a.current_worker, AccessRequest.not_completed.select { |a1| a1.current_worker == a.current_worker }.size ]
-      end
-    }
-    one_up_reminders.uniq!
-    one_up_reminders.each do |user,count|
-      AccessRequestMailer.notify_1_up_manager(user,count).deliver
-    end
+  def can_be_assigned_to?(user)
+    assignable_states = [
+      :waiting_for_resource_owner_assignment,
+      :waiting_for_help_desk_assignment
+    ]
+    assignable_states.include?(self.current_state.to_sym) && !can_only_be_viewed_by?(user) && !assigned_to?(user)
+    
   end
 end

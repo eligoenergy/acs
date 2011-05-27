@@ -1,0 +1,59 @@
+--- !map:HashWithIndifferentAccess
+defaults: &defaults
+  home_image: acs.png
+  email: &email
+    from: acsnotification@example.com
+    exceptions:
+      prefix: [ACS EXCEPTION] 
+      recipients: acsdevelopment@example.com
+  ldap: &ldap
+    host: ldap.cashnetusa.com
+    port: 636
+    encryption: :simple_tls
+    uid: uid
+    domain: ou=people,dc=com
+  csv:
+    user: [:first_name, :last_name, :start_date, :department, :job_title, :manager, :type]
+    backfill: [:first_name, :last_name, :login, :start_date, :department, :job_title, :manager, :type]
+  users:
+    import_helper_url: https://wiki.example.com/ 
+  companies:
+    example1:
+      domain: example1.com
+    example2:
+      domain: example2.com
+  
+development:
+  ldap:
+    active: false
+    login: ldap_name-acs_user
+    <<: *ldap
+  <<: *defaults
+
+production:
+  ldap:
+    active: true
+    login: ldap_name
+    <<: *ldap
+  email:
+    host: acs.example.com
+    protocol: https
+    smtp:
+      address: mail.example.com
+      domain: cashnetusa.com
+    <<: *email
+  <<: *defaults
+  
+staging:
+  ldap:
+    active: true
+    login: ldap_name-acs_user
+    <<: *ldap
+  <<: *defaults
+
+test:
+  ldap:
+    active: false
+    login: ldap_name
+    <<: *ldap
+  <<: *defaults

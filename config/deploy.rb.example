@@ -1,0 +1,43 @@
+require 'bundler/capistrano'
+require 'capistrano/ext/multistage'
+
+set :user, 'thatguy'
+set :scm_username, 'thatguy'
+
+
+set :application, "acs"
+set :repository, "git@github.com"
+set :stages, %(staging production)
+set :default_stage, 'staging'
+
+set :scm, :git
+
+after "deploy:update_code", "deploy:update_shared_symlinks"
+after "deploy:update_code", "deploy:update_public_symlink"
+after "deploy:update_code", "deploy:update_sphinx_config"
+namespace :deploy do
+  task :update_shared_symlinks do
+    %w(config/database.yml).each do |path|
+      run "rm -rf #{File.join(release_path, path)}"
+      run "ln -s #{File.join(deploy_to, "shared", path)} #{File.join(release_path, path)}"
+    end
+  end
+  # FIXME this isn't doing what I think it is supposed to be doing
+  # need to link .../shared/public to .../current/public
+  
+  task :update_public_symlink do
+    shared_path = File.join(deploy_to, "shared", "public")
+    public_path = File.join(release_path, "public")
+    run "rm -rf #{shared_path}"
+    run "cp -r #{public_path} #{shared_path}"
+    run "ln -s #{shared_path} #{public_path}"
+  end
+  task :restart do
+    run "touch #{File.join(release_path, "tmp")}/restart.txt"
+    # run "cd #{release_path}; rake ts:rebuild"
+  end
+  task :update_sphinx_config do
+    run "cd #{release_path} && rake ts:conf RAILS_ENV=production && rake ts:rebuild RAILS_ENV=production"
+  end
+end
+

@@ -44,6 +44,15 @@ Then /^an Access Request should be created for me$/ do
   @access_request.created_at.should be_within(5).of(Time.now)
 end
 
+Then /^the access request for "([^"]*)" should request "([^"]*)" access$/ do |resource, permission|
+  resource = resources(resource.to_sym)
+  access_request = @request.access_requests.where(:resource_id => resource.id).first
+  access_request.should_not be_blank
+  access_request.resource.should == resource
+  access_request.permission_requests.any?{|permission_request| permission_request.permission.permission_type.name == permission }.should be_true
+end
+
+
 Then /^it should have a permission request for "([^"]*)" access$/ do |permission_type| #"
   @access_request.permission_requests.first.permission.permission_type.name.should == permission_type
 end
@@ -64,15 +73,24 @@ Then /^an Access Request should be created for "([^"]*)"$/ do |username| #"
   @access_request.created_at.should be_within(5).of(Time.now)  
 end
 
-Given /^"([^"]*)" is an access request created by "([^"]*)"$/ do |name, login|
-  @access_request = AccessRequest.find(fixture(name))
-  @created_by = User.find(fixture(login))
-  @access_request.user.should == @created_by
+Given /^"([^"]*)" is a request created by "([^"]*)"$/ do |name, login|
+  @request = requests(name.to_sym)
+  @created_by = users(login.to_sym)
+  @request.should_not be_blank
+  @created_by.should_not be_blank
+  @request.user.should == @created_by
 end
 
 Then /^I "([^"]*)" "([^"]*)" for "([^"]*)"$/ do |action, radio_base, permission| #"
   val = action == 'approve' ? 'true' : 'false'
-  id = @access_request.permission_requests.first.id
+  id = @request.permission_requests.first.id
+  Then "I choose \"#{radio_base}_#{id}_approved_#{val}\""
+end
+
+Then /^I "([^"]*)" "([^"]*)" "([^"]*)" permission for "([^"]*)"$/ do |action, radio_base, permission, request|
+  @request = requests(request.to_sym)
+  val = action == 'approve' ? 'true' : 'false'
+  id = @request.permission_requests.first.id
   Then "I choose \"#{radio_base}_#{id}_approved_#{val}\""
 end
 
@@ -96,9 +114,19 @@ Given /^it is waiting for resource owner$/ do
   @access_request.should be_waiting_for_resource_owner
 end
 
-Then /^the access request should be "([^"]*)"$/ do |aasm_state| #"
-  @access_request.reload
-  @access_request.current_state.should == aasm_state
+Then /^"([^"]*)" access requests should be "([^"]*)"$/ do |request, current_state|
+  @request = requests(request.to_sym)
+  @request.access_requests.all? {|access_request| access_request.current_state.should == current_state }
+end
+
+Then /^the requests access requests should be "([^"]*)"$/ do |aasm_state| #"
+  @request.reload
+  @request.access_requests.all?{|access_request| access_request.current_state.should == aasm_state }
+end
+
+Then /^the requests access requests should be unassigned$/ do
+  @request.reload
+  @request.access_requests.all?{|access_request| access_request.current_worker.should be_blank }
 end
 
 Then /^the access request should be assigned to "([^"]*)"$/ do |username| #"
@@ -111,7 +139,7 @@ end
 
 
 Then /^"([^"]*)" should have "([^"]*)" permissions$/ do |username, permission|
-  @access_request.reload
+  @request.reload
   user = User.find_by_login username
   permission = permissions(permission.to_sym)
   user.permissions.should include(permission)

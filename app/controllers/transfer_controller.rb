@@ -18,7 +18,7 @@ class TransferController < ApplicationController
     end
     @new_job = Job.find(params[:user][:job_id])
     unless @old_job == @new_job
-      @user.transfer_employee(@old_job, @new_job, current_user)
+      @user.transfer_employee(@new_job, current_user)
     end
     if @user.save
       flash[:notice] = "Employee transfer completed."

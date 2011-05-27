@@ -1,6 +1,10 @@
 class Resource < ActiveRecord::Base
-  has_many :permissions
-  has_many :permission_types, :through => :permissions
+  include AASM
+  has_many :permissions, :conditions => { :activated => true }
+  has_many :permission_types, :through => :permissions #, :after_add => :record_association_add, :after_remove => :record_association_remove
+  has_many :active_permissions, :conditions => { :activated => true }, :class_name => 'Permission'
+  include Acs::PermissionKeeper
+  # does_not_actually_delete :permissions # in the app, permissions are created and removed by using permission_type_ids in forms
   # has_many :users, :through => :permissions
   has_many :access_requests
   # this is the owners association
@@ -21,13 +25,29 @@ class Resource < ActiveRecord::Base
   scope :resource_group, lambda {|resource_group| where(:resource_group_id => resource_group.id) }
   scope :for_job, lambda {|job| includes(:permissions => :jobs).where('jobs.id = ?', job.id)}
   # scope :owner_count, lambda {|user| count(:conditions => ["resources_users.user_id = ?",user.id], :include => :users)} #"inner join resources_users on resources.id = resource_users.resource_id where resource_users.user_id = ?", user.id)}
-  # scope :owned_by, lambda {|user| joins("resources_users on resources.id = resources_users.resource_id").where(["resources_users.user_id = ?", user.id])}
-
+  scope :owner_is, lambda {|user| joins("inner join resources_users on resources.id = resources_users.resource_id").where(["resources_users.user_id = ?", user.id])}
+  # scope :owner_is, lambda {|user| }
+  scope :active, where(:current_state => 'active')
+  
   define_index do
     indexes :name, :sortable => true
     #has resource_group_id
   end
-    
+  
+  aasm_column :current_state
+  aasm_initial_state :active
+
+  aasm_state :active
+  aasm_state :deactivated
+
+  aasm_event :deactivate do
+    transitions :from => :active, :to => :deactivated
+  end
+  
+  aasm_event :activate do
+    transitions :from => :deactivated, :to => :active
+  end  
+
   # TODO make sure this is correct
   def self.owned_by(user)
     "select id from resources
@@ -48,7 +68,7 @@ class Resource < ActiveRecord::Base
   end
   
   def has_permission?(permission)
-    permissions.include?(permission)
+    permissions.active.include?(permission)
   end
   
   def owned_by?(user)
@@ -66,16 +86,16 @@ class Resource < ActiveRecord::Base
     self.users.count == 1
   end
   
+  def does_not_have_any_owners?
+    self.users.blank?
+  end
+  
   def has_unassigned_access_requests?
     self.access_requests.any? {|ar| ar.waiting_for_resource_owner_assignment? }
   end
   
   def unassigned_access_requests
     self.access_requests.where(:current_state => 'waiting_for_resource_owner_assignment')
-  end
-  
-  def does_not_have_any_owners?
-    self.users.blank?
   end
   
   def long_name

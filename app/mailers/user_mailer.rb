@@ -1,5 +1,5 @@
 class UserMailer < ActionMailer::Base
-  default :from => "example@example.com"
+  default :from => App.email[:from]
 
   def activation_email(user)
     @user = user
@@ -29,14 +29,14 @@ class UserMailer < ActionMailer::Base
   def notify_hr_of_user_creation(user, hr_user)
     @user = user
     @hr_user = hr_user
-    @url = user_path(@user, :host => "localhost:3000")
+    @url = user_path(@user)
     mail(:to => @hr_user.email, :subject => 'A new employee requires HR confirmation')
   end
 
   def notify_hr_of_user_termination_by_manager(user, hr_user)   
   	  @user = user
   	  @hr_user = hr_user
-      @url = user_path(@user, :host => "localhost:3000")
+      @url = user_path(@user)
       mail(:to => @hr_user.email, :subject => 'A terminated employee requires HR confirmation')
   end
 

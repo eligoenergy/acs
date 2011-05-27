@@ -32,10 +32,11 @@ Then /^a "([^"]*)" "([^"]*)" should be created with "([^"]*)" and "([^"]*)"$/ do
   @user.created_at.should be_within(2).of(Time.now) 
 end
 
-Then /^access requests for resources needed by "([^"]*)" should be created$/ do |job| #"
+Then /^a request for resources needed by "([^"]*)" should be created$/ do |job| #"
+  # TODO compare the actual permissions and not number of them
   job = jobs(job.to_sym)
-  @user.should have_exactly(job.permissions.size).permission_requests
-  @access_request = @user.access_requests.first
+  @request = @user.requests.first
+  @request.should have_exactly(job.permissions.size).permission_requests
 end
 
 Then /^it should be sent to help desk$/ do
@@ -57,9 +58,10 @@ Then /^"([^"]*)" should be activated$/ do |username|
   @user.activated_at.should_not be_nil
 end
 
-Then /^they should have (\d+) access requests created for them$/ do |number|
-  @access_requests = @user.access_requests.all
-  @access_requests.size.should == number.to_i
+Then /^"([^"]*)" should have a request with (\d+) access requests created for them$/ do |username, number|
+  @user = users(username.to_sym)
+  @request = @user.requests.last
+  @request.access_requests.size.should == number.to_i
 end
 
 Then /^the access requests should be "([^"]*)"$/ do |current_state|
@@ -68,9 +70,10 @@ Then /^the access requests should be "([^"]*)"$/ do |current_state|
   end
 end
 
-Then /^the access requests should have "([^"]*)" for "([^"]*)" assignment$/ do |username, role|
+Then /^the requests access requests should have "([^"]*)" for "([^"]*)" assignment$/ do |username, role|
   user = users(username.to_sym)
-  @access_requests.each do |access_request|
+  @request.access_requests.each do |access_request|
+    
     access_request.send(role).should == user
   end
 end
@@ -92,8 +95,6 @@ Then /^the access requests reason should be "([^"]*)"$/ do |reason|
   end
 end
 
-Then /^the access requests should be by manager for subordinate$/ do
-  @access_requests.each do |access_request|
-    access_request.should be_by_manager_for_subordinate
-  end
+Then /^the request should be by manager for subordinate$/ do
+  @request.should be_created_by_manager_for_subordinate
 end

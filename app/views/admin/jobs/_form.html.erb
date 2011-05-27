@@ -10,6 +10,9 @@
   <%= f.label :lawson_code %>
   <%= f.text_field :lawson_cd %>
 </div>
-
-
-
+<div class="field">
+  <%= f.label :current_state %>
+  <p class="<%= 'deactivated' if @job.deactivated? %>">
+    <%= @job.current_state %>
+  </p>
+</div>

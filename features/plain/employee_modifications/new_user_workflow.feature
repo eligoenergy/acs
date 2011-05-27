@@ -17,10 +17,11 @@ Feature: hr or manager creates a new employee
 	  Then "jdoe" should be created
     And they should have the job "administrative_assistant"
     And they should have the manager "mgroulx"
-    And they should have the email address "jdoe@example.com"
-	  And access requests for resources needed by "administrative_assistant" should be created
-	  And the access request should be "waiting_for_help_desk_assignment"
-    And the access request reason should be "new_hire"
+    And they should have the email address "jdoe@enovafinancial.com"
+    And the user "jdoe" should be "active"
+	  And a request for resources needed by "administrative_assistant" should be created
+    And the request reason should be "new_hire"
+	  And the requests access requests should be "waiting_for_help_desk_assignment"
   	And the new employee should not have any permissions
     And the new employee should have the role "public"
 
@@ -38,7 +39,7 @@ Feature: hr or manager creates a new employee
     Then "jdoe" should be created
     And they should have the job "uk_application_support"
     And they should have the manager "odolchenko"
-    And they should have the email address "jdoe@example.com"
+    And they should have the email address "jdoe@enovafinancial.com"
     And the user "jdoe" should be "pending"
     And the user should have 0 access requests
 
@@ -48,10 +49,10 @@ Feature: hr or manager creates a new employee
     And I follow "That Guy"
     When I press "Confirm Employee"
     Then "tguy" should be activated
-    And they should have 2 access requests created for them
-    And the access requests should be "waiting_for_help_desk_assignment"
-    And the access requests should have "nott" for "hr" assignment
-    And the access requests reason should be "new_hire"
-    And the access requests should be by manager for subordinate
+    And "tguy" should have a request with 2 access requests created for them
+    And the requests access requests should be "waiting_for_help_desk_assignment"
+    And the requests access requests should have "nott" for "hr" assignment
+    And the request reason should be "new_hire"
+    And the request should be by manager for subordinate
     And I should be on the user page for "tguy"
-
+    

@@ -1,9 +1,9 @@
 <div class="field">
   <%= f.label :job_id %>
   <% if current_user.manager? && !current_user.preferred_viewable_departments.nil?%>
-    <%= f.select :job_id, option_groups_from_collection_for_select(Department.alphabetical.includes(:jobs).where(id: current_user.viewable_departments), :jobs, :name, :id, :name, @user.try(:job).try(:id)) %> 
+    <%= f.select :job_id, option_groups_from_collection_for_select(Department.alphabetical.includes(:jobs).where(id: current_user.viewable_departments), :active_jobs, :name, :id, :name, @user.try(:job).try(:id)) %> 
   <% else %>  
-    <%= f.select :job_id, option_groups_from_collection_for_select(Department.alphabetical.includes(:jobs).all, :jobs, :name, :id, :name, @user.try(:job).try(:id)) %>
+    <%= f.select :job_id, option_groups_from_collection_for_select(Department.alphabetical.includes(:jobs).all, :active_jobs, :name, :id, :name, @user.try(:job).try(:id)) %>
   <% end %>
 </div>
 <div class="field">
@@ -42,7 +42,7 @@
   <%= f.label :start_date %>
   <%= f.date_select :start_date %>
 </div>
-<% if action_name != 'new' && current_user.can_manage?(@user) %>
+<% if !['new', 'permissions'].include?(action_name) && current_user.can_manage?(@user) %>
   <div class="field">
     <label>ACS Roles</label>
     <% Role.all.each_with_index do |role, i| %>

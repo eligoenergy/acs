@@ -6,7 +6,7 @@
     <th>Permission Types</th>
   </tr>
   <% items.each do |resource| %>
-    <tr class="<%= 'problem_row' if resource.does_not_have_any_owners? %>">
+    <tr class="<%= 'deactivated' if resource.does_not_have_any_owners? || resource.deactivated? %>">
       <td><%= link_to resource.name, edit_admin_resource_path(resource) %></td>
       <td><%= resource.resource_group.name %></td>
       <td><%= (resource.permission_types.map {|pt| pt.name }).join(', ') %></td>

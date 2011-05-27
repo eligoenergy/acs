@@ -1,5 +1,9 @@
 Acs::Application.routes.draw do
-
+  
+  resources :requests do
+    resources :access_requests
+  end
+  
   get "foo/index"
 
   get "terminated_users/index"
@@ -42,11 +46,12 @@ Acs::Application.routes.draw do
   match 'access_requests/:to_do/permissions' => 'access_requests#choose_permissions', :as => 'choose_permissions'
 
   get "dashboard/index"
+  get "dashboard/test"
   match 'dashboard' => 'dashboard#index', :as => 'dashboard'
   match 'dashboard/auto_refresh' => 'dashboard#auto_refresh', :as => 'auto_refresh'
   
   resources :users do
-    resources :access_requests
+    resources :requests
    end
 
   resource :user_session
@@ -95,13 +100,16 @@ Acs::Application.routes.draw do
     resources :jobs do
       resources :users
       resources :change_logs, :only => :index
+      post :activate
     end
     resources :resource_sections
     resources :resource_groups do
       resources :resources
       resources :permission_types
     end
-    resources :resources
+    resources :resources do
+      post :activate
+    end
     resources :terminated_users do
       member do
         post :rehire

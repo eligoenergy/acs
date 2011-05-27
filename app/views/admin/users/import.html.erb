@@ -7,7 +7,9 @@
       <pre>first_name, last_name, login, start_date, department_name, job_itle, manager_login, employment_type</pre>
       <p>Select <strong>user</strong> to add new employees. Use the format below for a new employee:</p>
       <pre>first_name, last_name, start_date, department_name, job_title, manager_login, employment_type</pre>
-      <p>For a list of valid Department Names and Job Titles, please see this wiki page:<br><a href="http://example.com">http://example.com</a></p>
+      <% unless App.users[:import_helper_url].blank? %>
+        <p>For a list of valid Department Names and Job Titles, please see this wiki page:<br><%= link_to App.users[:import_helper_url], App.users[:import_helper_url] %></p>
+      <% end %>
     </div>
   </div>
     <div class="slide_out_section">
@@ -16,7 +18,7 @@
       <div id="importer_form" class="slide_out_article fix_top_margin">
         <ul>
           <li>
-            Upload from CSV : <%= select(:upload, :filetype, CSV_TYPES['types'].keys, :prompt => true)%>
+          Upload from CSV : <%= select(:upload, :filetype, App.csv.keys, :prompt => true)%>
             <%= fa.file_field :file %>
           </li>
           <li class="noteable">
@@ -28,7 +30,7 @@
         </ul>
       </div>
       <div class="slider_button">
-        <%= fa.submit 'Submit', :disable_with => "Uploading...", :class => 'awesome_button' %>
+        <button type="submit" class="centerish button"><span class="user icon"></span>Import Users</button>
       </div>
     <% end %>
   </div>

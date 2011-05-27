@@ -1,5 +1,9 @@
+<% if @job.active? %>
+  <%= real_button_to raw("<span class=\"cross icon\"></span>Deactivate"), admin_job_path(@job), :method => :delete, :class => 'new_obj_link negative button', :confirm => "Are you sure you want to deactivate #{@job.name}? This will prevent employees from being created with this job or transfered to this job. It will not change current employees of the job." %>
+<% else %>
+  <%= real_button_to raw("<span class=\"plus icon\"></span>Activate"), admin_job_activate_path(@job), :class => 'new_obj_link button' %>
+<% end %>
 <h3>Editing job</h3>
-
 <%= form_for([:admin,@job]) do |f| %>
   <% if @job.errors.any? %>
     <div id="error_explanation">

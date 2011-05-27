@@ -9,13 +9,11 @@ Feature: rehire a user
     And I follow the link to user "egarret"
     And I press "Rehire Emily Garret"
     Then the user "egarret" should be "active"
-    And there should be 2 access request for "egarret"
-    And the access request should request to "grant"
-    And the access request reason should be "rehire"
-    And the access request should be "waiting_for_help_desk_assignment"
-    And the access request should be created by "nott"
-    And the access request reason should be "rehire"
-    And the access request should have 1 permission request
+    And "egarret" should have a request with 2 access requests created for them
+    And the request reason should be "rehire"
+    And the request should be created by "nott"
+    And the requests access requests should request to "grant"    
+    And the requests access requests should be "waiting_for_help_desk_assignment"
     And I should see "Successfully rehired user and notified help desk"
     And I should be on the user page for "egarret"
     

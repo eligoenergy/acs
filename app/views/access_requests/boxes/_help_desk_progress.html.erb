@@ -1,10 +1,6 @@
 <article class="request_step <%= @access_request.box_status(:help_desk) %>">
   <header>Help Desk Progress</header>
-  <% if @access_request.waiting_for_help_desk? && current_user.help_desk? %>
-    <div id="unasssign_request">
-      <%= button_to "Unassign Access Request", unassign_access_request_path(@access_request), :class => 'awesome_button' %>
-    </div>
-  <% end %>
+
   <% if @access_request.at_help_desk? %>
     <% if @access_request.waiting_for_help_desk_assignment? %>
       <p>This request is waiting for help desk assignment.</p>

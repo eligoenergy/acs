@@ -5,9 +5,11 @@ class Admin::ResourcesController < ApplicationController
   def index
     unless params[:resource_group_id].blank?
       @resource_group = ResourceGroup.find(params[:resource_group_id])
-      @resources = @resource_group.resources.includes(:resource_group, :permission_types, :users).order("resource_groups.name, resources.name").paginate(:page => params[:page], :per_page => current_user.preferred_items_per_page)
+      @resources = @resource_group.resources.includes(:resource_group, :users).order("resource_groups.name, resources.name").paginate(:page => params[:page], :per_page => current_user.preferred_items_per_page)
     else
-      @resources = Resource.includes(:resource_group, :permission_types, :users).order("resource_groups.name, resources.name").paginate(:page => params[:page], :per_page => current_user.preferred_items_per_page)
+      # TODO FIXME for some reason the includes below stopped working when :permission_types is included
+      # 'PGError: ERROR:  column permission_types.activated does not exist' but not sure why it thinks it should exist at this point
+      @resources = Resource.includes(:resource_group, :users).order("resource_groups.name, resources.name").paginate(:page => params[:page], :per_page => current_user.preferred_items_per_page)
     end
     @resource_groups = ResourceGroup.order('name').all
     respond_to do |format|
@@ -69,10 +71,8 @@ class Admin::ResourcesController < ApplicationController
   # PUT /resources/1.xml
   def update
     @resource = Resource.find(params[:id])
-    # logger.info { "****$* params: #{params.inspect}" }
     respond_to do |format|
       if @resource.update_attributes(params[:resource])
-        # logger.info { "****$* @resource.users: #{@resource.users.inspect}" }
         format.html { redirect_to(edit_admin_resource_path(@resource), :notice => 'Resource was successfully updated.') }
         format.xml  { head :ok }
       else
@@ -83,14 +83,25 @@ class Admin::ResourcesController < ApplicationController
     end
   end
 
+    # POST /jobs/1/activate
+  def activate
+    @resource = Job.find(params[:resource_id])
+    @resource.activate!
+    flash[:notice] = "Resource successfully activated."
+    respond_to do |format|
+      format.html { redirect_to(edit_admin_resource_path(@resource)) }
+      format.xml  { head :ok }
+    end
+  end
+  
   # DELETE /resources/1
   # DELETE /resources/1.xml
   def destroy
     @resource = Resource.find(params[:id])
-    @resource.destroy
+    @resource.deactivate!
 
     respond_to do |format|
-      format.html { redirect_to(admin_resources_url) }
+      format.html { redirect_to(edit_admin_resource_url(@resource)) }
       format.xml  { head :ok }
     end
   end

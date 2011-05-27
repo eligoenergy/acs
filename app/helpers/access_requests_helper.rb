@@ -34,8 +34,8 @@ module AccessRequestsHelper
     end
   end
 
-  def should_be_disabled?(access_request, permission)
-    access_request.user.permissions.include?(permission) || access_request.user.has_open_request_for?(permission)
+  def should_be_disabled?(request, permission)
+    request.user.permissions.include?(permission) || request.user.has_open_request_for?(permission)
   end
   
   def access_request_status_icon(access_request)
@@ -76,6 +76,18 @@ module AccessRequestsHelper
       'finished_status'
     else
       'in_progress_status'
+    end
+  end
+  
+  def previous_access_request_link(access_request)
+    unless access_request.position == 1
+      link_to raw("<span class=\"uparrow icon\"></span>Previous"), [@request,@request.previous(access_request)], :class => "#{@request.next(access_request).blank? ? 'right' : 'middle'} button"
+    end
+  end
+
+  def next_access_request_link(access_request)
+    unless access_request.position == @request.access_requests.size
+      link_to raw("<span class=\"downarrow icon\"></span>Next"), [@request, @request.next(access_request)], :class => 'right button'
     end
   end
 end

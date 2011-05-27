@@ -7,11 +7,11 @@ timothyho:
   roles: public
   job: president
   manager_flag: true
-  company: example
+  company: enova
   employment_type: full_time
   crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
   password_salt: u3xGieFLNTS91zGf1oj2
-  lft: 1
+  lft: 1  
   rgt: 29
 rcooper:
   first_name: Roland
@@ -22,7 +22,7 @@ rcooper:
   roles: admin
   job: opssupport
   manager: timothyho
-  company: example
+  company: enova
   employment_type: full_time
   crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
   password_salt: u3xGieFLNTS91zGf1oj2
@@ -39,7 +39,7 @@ dengle:
   job: opssupport
   manager: rcooper
   permissions: cnu_portal_executive, jira_admin, acunote_admin
-  company: example
+  company: enova
   employment_type: full_time
   crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
   password_salt: u3xGieFLNTS91zGf1oj2
@@ -55,7 +55,7 @@ mgroulx:
   job: product_mgmt_director
   manager: timothyho
   manager_flag: true
-  company: example
+  company: enova
   employment_type: full_time
   crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
   password_salt: u3xGieFLNTS91zGf1oj2
@@ -71,7 +71,7 @@ nott:
   job: recruiting_coordinator
   manager: timothyho
   manager_flag: true
-  company: example
+  company: enova
   employment_type: full_time
   crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
   password_salt: u3xGieFLNTS91zGf1oj2
@@ -87,11 +87,11 @@ mstreet:
   job: help_desk_manager
   manager: timothyho
   manager_flag: true
-  company: example
+  company: enova
   employment_type: full_time
   crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
   password_salt: u3xGieFLNTS91zGf1oj2
-  lft: 10
+  lft: 10  
   rgt: 15
 jserrano:
   first_name: Jaime
@@ -103,10 +103,10 @@ jserrano:
   job: help_desk_member
   manager: mstreet
   manager_flag: false
-  company: example
+  company: enova
   employment_type: full_time
   crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
-  password_salt: u3xGieFLNTS91zGf1oj2
+  password_salt: u3xGieFLNTS91zGf1oj2  
   lft: 11
   rgt: 12
 rhook:
@@ -119,10 +119,10 @@ rhook:
   job: help_desk_member
   manager: mstreet
   manager_flag: true
-  company: example
+  company: enova
   employment_type: full_time
   crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
-  password_salt: u3xGieFLNTS91zGf1oj2
+  password_salt: u3xGieFLNTS91zGf1oj2  
   lft: 13
   rgt: 14
 odolchenko:
@@ -135,7 +135,7 @@ odolchenko:
   job: s_and_o_uk
   manager: timothyho
   manager_flag: true
-  company: example
+  company: enova
   employment_type: full_time
   crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
   password_salt: u3xGieFLNTS91zGf1oj2
@@ -151,7 +151,7 @@ alee:
   job: s_and_o_uk
   manager: odolchenko
   manager_flag: false
-  company: example
+  company: enova
   employment_type: full_time
   crypted_password: 8d80a46bf4552de1d5b886e8debd1ba03efac6f6ed7a83af08d6057bec5d021b99a072dde249e936d8d5ae5dd5e7fe3480b72ef8099e616347fb72a3233d8186
   password_salt: u3xGieFLNTS91zGf1oj2
@@ -167,7 +167,7 @@ jrocket:
   job: s_and_o_uk
   manager: odolchenko
   manager_flag: false
-  company: example
+  company: enova
   permissions: wiki
   employment_type: full_time
   terminated_by: odolchenko
@@ -185,7 +185,7 @@ tguy:
   job: s_and_o_uk
   manager: odolchenko
   manager_flag: false
-  company: example
+  company: enova
   employment_type: full_time
   submitted_by: odolchenko
   start_date: <%= Date.today - 5 %>
@@ -203,7 +203,7 @@ jfaceless:
   job: s_and_o_uk
   manager: odolchenko
   manager_flag: false
-  company: example
+  company: enova
   employment_type: full_time
   submitted_by: nott
   start_date: <%= Date.today + 5 %>
@@ -221,7 +221,7 @@ egarret:
   job: s_and_o_uk
   manager: odolchenko
   manager_flag: false
-  company: example
+  company: enova
   employment_type: full_time
   terminated_by: nott
   start_date: <%= Date.today - 25 %>
@@ -240,7 +240,7 @@ holajuwon:
   job: s_and_o_uk
   manager: odolchenko
   manager_flag: false
-  company: example
+  company: enova
   employment_type: full_time
   terminated_by: nott
   start_date: <%= Date.today - 25 %>
@@ -249,4 +249,3 @@ holajuwon:
   password_salt: u3xGieFLNTS91zGf1oj2
   lft: 27
   rgt: 28
-

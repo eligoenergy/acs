@@ -6,6 +6,14 @@ class ApplicationController < ActionController::Base
 
   before_filter :get_current_user
 
+  def default_url_options
+    if Rails.env.production?
+      {:host => App.email[:host], :protocol => App.email[:protocol]}
+    else
+      {}
+    end    
+  end
+  
   def get_current_user
     current_user
   end
@@ -144,6 +152,7 @@ class ApplicationController < ActionController::Base
     @permissions = @user.permissions.all
     @all_resource_groups = ResourceGroup.includes(:resources => [:users]).alphabetical.all
     @resource_groups = ResourceGroup.includes(:resources).accessible_by(@user).alphabetical.all
+    @resource_groups_with_ownerships = ResourceGroup.includes(:resources).with_resources_of(@user).alphabetical.all
     @managers = User.active.managers.alphabetical_login.all
     @employment_types = EmploymentType.alphabetical.all
     @descendants = User.active.descendants_of(@user).alphabetical_login.paginate(:page => params[:page], :per_page => 50) if @user.manager?    

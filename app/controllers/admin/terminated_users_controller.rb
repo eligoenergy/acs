@@ -14,22 +14,14 @@ class Admin::TerminatedUsersController < ApplicationController
 
   def rehire
     @user = User.find(params[:id])
-    if @user.rehire!
+    if @user.has_no_open_terminations
       @user.submitted_by = current_user
-      Resource.for_job(@user.job).all.each do |resource|
-        access_request = AccessRequest.create(
-          :request_action => AccessRequest::ACTIONS[:grant],
-          :reason => AccessRequest::REASONS[:rehire],
-          :resource => resource,
-          :permission_ids => resource.permissions.map{|perm| perm.id if perm.resource == resource }.compact,
-          :user => @user,
-          :created_by => current_user,
-          :for_new_user => false
-        )
-        access_request.grant_all_permissions unless access_request.nil?
-        access_request.send_to_help_desk!
-      end
-      @user.permissions.clear
+      @user.generate_future_employee_request!(
+        :created_by => current_user,
+        :hr => current_user,
+        :reason => Request::REASONS[:rehire],
+        :end_action => :rehire!
+      )
       flash[:notice] = "Successfully rehired user and notified help desk"
     else
       flash[:error] = "Termination requests must be completed before the user is rehired"

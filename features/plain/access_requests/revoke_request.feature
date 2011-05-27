@@ -10,9 +10,17 @@ Feature: revoke access to a permission
     And I choose "Dan Engle"
     And I press "Next Step"
     And I check permission "jira_admin"
-    And I press "Save"
+    And I press "Submit Request"
     Then a access request to revoke "admin" access to "jira" should be created
-    And the access request should be for "dengle"
-    And the access request should be "waiting_for_help_desk_assignment"
-    And the access request reason should be "revoke"
+    Then "dengle" should have a request with 1 access requests created for them
+    And the requests access requests should be "waiting_for_help_desk_assignment"
+    And the request reason should be "revoke"
 		
+  Scenario: manager forgets to select a permission
+    Given I am logged in as "rcooper"
+		And "dengle" is my subordinate
+		When I go to the revoke access request page
+    And I choose "Dan Engle"
+    And I press "Next Step"
+    And I press "Submit Request"
+    Then I should see "You need to select at least one permission to revoke."

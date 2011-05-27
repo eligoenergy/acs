@@ -1,6 +1,7 @@
 class User < ActiveRecord::Base
   include AASM
   include Acs::Ldap
+  include Acs::RequestGenerator
   # extend Acs::UserCsvImporter
 
   acts_as_nested_set :parent_column => 'manager_id'
@@ -12,7 +13,8 @@ class User < ActiveRecord::Base
   has_and_belongs_to_many :resources, :uniq => true
   belongs_to :manager, :class_name => 'User'
   has_many :actionable_requests, :class_name => 'AccessRequest', :foreign_key => 'current_worker_id'
-  has_many :access_requests
+  has_many :requests
+  has_many :access_requests, :through => :requests
   has_many :permission_requests, :through => :access_requests
   has_many :notes
   has_many :subordinates, :class_name => 'User', :foreign_key => 'manager_id'
@@ -83,7 +85,7 @@ class User < ActiveRecord::Base
   scope :alphabetical_login, order('users.login')
   scope :with_incomplete_access_requests, includes(:access_requests).where('access_requests.current_state not in (?)', ['completed', 'denied', 'canceled'])
   scope :has_some_access_to, lambda { |resource| includes(:permissions).where('permissions_users.permission_id in (?)', resource.permissions.map(&:id)) }
-
+  
   preference :items_per_page, :integer, :default => 20
   preference :viewable_departments , :array
 
@@ -149,11 +151,11 @@ class User < ActiveRecord::Base
   def manager?
     self.manager_flag
   end
-
+  
   def direct_manager_of
     User.active.first_level_children_of self
   end
-
+      
   def manager_of?(user)
     @is_manager_of ||= self.descendants.include?(user)
   end
@@ -167,23 +169,24 @@ class User < ActiveRecord::Base
   def can_request_access_for?(user)
     self == user ? true : self.descendants.include?(user) || self.hr?
   end
-
+  
   def viewable_departments
     if self.preferred_viewable_departments.nil?
-      Department.all.each{ |d| d.id }
+      Department.all.each{ |d| d.id }  
     else
-      YAML.load(self.preferred_viewable_departments)[".key"]
-    end
+      YAML.load(self.preferred_viewable_departments)[".key"]       
+    end  
   end
-
+  
   # AASM enter and exit state methods
   def complete_termination
     self.deleted_at = Time.now.utc
     self.end_date = Date.today
   end
-
+  
+  # TODO why doesn't this method use a ? at the end
   def has_no_open_terminations
-    self.access_requests.not_completed.are_terminations.blank?
+    self.requests.not_completed.are_terminations.blank?
   end
 
   def complete_activation
@@ -268,37 +271,32 @@ class User < ActiveRecord::Base
   def has_open_access_request_for?(permission)
     self.access_requests.not_completed.any? {|ar| ar.permission_requests.any? {|pr| pr.permission == permission } }
   end
-
-  def transfer_employee(old_job,new_job,submitter)
-    old_perms = old_job.permissions
+  
+  def transfer_employee(new_job, submitter)
+    old_perms = job.permissions
     new_perms = new_job.permissions
     self.job = new_job
     revoke = ((old_perms - new_perms) - self.access_requests.not_completed.to_revoke.map(&:permissions).compact.uniq)
     grant = ((new_perms - old_perms) - self.access_requests.not_completed.to_grant.map(&:permissions).compact.uniq)
+    request = self.requests.create(
+      :created_by => submitter,
+      :reason => Request::REASONS[:transfer]
+    )
     revoke.each do |r|
-      req = AccessRequest.new(
+      access_request = request.access_requests.create(
         :resource => r.resource,
-        :user => self,
         :request_action => AccessRequest::ACTIONS[:revoke],
-        :reason => AccessRequest::REASONS[:transfer],
-        :created_by => submitter,
-        :created_by_transfer => true,
         :permission_ids => [r.id]
       )
-      req.send_to_help_desk! unless self.has_open_access_request_for?(r)
     end
     grant.each do |g|
-      req = AccessRequest.new(
+      access_request = request.access_requests.create(
         :resource => g.resource,
-        :user => self,
         :request_action => AccessRequest::ACTIONS[:grant],
-        :reason => AccessRequest::REASONS[:transfer],
-        :created_by => submitter,
-        :created_by_transfer => true,
         :permission_ids => [g.id]
       )
-      req.send_to_help_desk! unless self.has_open_access_request_for?(g)
     end
+    request.start!
   end
 
   def self.verify_csv_length(csv,format)
@@ -320,7 +318,6 @@ class User < ActiveRecord::Base
         users << user
       end
     }
-    logger.info { "\n*******\n* imported_users: #{users.inspect}" }
     users
   end
 
@@ -353,7 +350,7 @@ class User < ActiveRecord::Base
     # Can't go straight to User.create here because we need to generate a login and email address
     # TODO: refactor this step
 
-    User.transaction do
+    User.transaction do      
       begin
         user = User.new(
           :first_name => first_name.titleize.strip,
@@ -363,32 +360,19 @@ class User < ActiveRecord::Base
           :manager_id => user_manager.id,
           :job_id => user_position.id,
           :employment_type_id => user_employment_type.id,
-          :company_id => Company.find_by_name('Example').id
+          :company_id => Company.find_by_name('Enova').id
         )
         user.submitted_by = submitter
         user.generate_unique_login if user.login.nil?
         user.password_salt = Authlogic::Random.friendly_token unless Rails.env.production?
-        logger.info { "* user.valid?: #{user.valid?}" }
-        logger.info { "*      errors: #{user.errors.inspect}" }
+
         user.save!
         user.activate!
-        AccessRequest.transaction do
-          logger.info { "\n\n*****\n inside AccessRequest.transaction user: #{user.inspect}" }
-          Resource.for_job(user.job).all.each do |resource|
-            access_request = user.access_requests.create(
-              :request_action => AccessRequest::ACTIONS[:grant],
-              :reason => AccessRequest::REASONS[:new_hire],
-              :resource => resource,
-              :permission_ids => resource.permissions.map{|perm| perm.id if perm.resource == resource }.compact,
-              :created_by => user.submitted_by,
-              :for_new_user => true,
-              :created_by_import => true
-            )
-            access_request.grant_all_permissions
-            access_request.notes.create(:body => note, :user => user.submitted_by)
-            access_request.send_to_help_desk!
-          end
-        end
+        user.generate_future_employee_request!(
+          :created_by => submitter,
+          :note => note,
+          :manager => submitter
+        )
         return user
       rescue ActiveRecord::RecordInvalid => e
         return e

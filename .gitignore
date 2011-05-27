@@ -1,6 +1,8 @@
 .bundle
 hanks/*
 db/*.sqlite3
+db/import/*
+db/backups/*
 log/*.log
 *.log
 log/error.log*
@@ -16,6 +18,7 @@ tmp/*
 .idea/acs.iml
 db/test.sqlite3-journal
 config/deploy.rb
-config/ldap.yml
+config/deploy/*
+config/app.yml
 db/sphinx
 log

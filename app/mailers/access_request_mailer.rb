@@ -1,6 +1,6 @@
 class AccessRequestMailer < ActionMailer::Base
   prepend_view_path MailerTemplate::Resolver.instance
-  default :from => "example@example.com"
+  default :from => App.email[:from]
 
   def access_request(user)
     @user = user
@@ -11,7 +11,7 @@ class AccessRequestMailer < ActionMailer::Base
   def notify_user_of_manager_approval(access_request)
     @access_request = access_request
     @user = @access_request.user
-    @url = access_request_url(access_request, :host => 'example.com', :protocol => 'https')
+    @url = access_request_url(access_request)
     mail(:to => @user.email,
          :subject => 'Your manager has approved your request')
   end
@@ -19,7 +19,7 @@ class AccessRequestMailer < ActionMailer::Base
   def request_needs_owner_assignment(access_request, resource_owner)
     @access_request = access_request
     @user = resource_owner
-    @url = access_request_url(access_request, :host => 'example.com', :protocol => 'https')
+    @url = access_request_url(access_request)
     mail(:to => @user.email,
          :subject => 'ACTION REQUIRED: A user requested access to a resource you own')
   end
@@ -35,7 +35,7 @@ class AccessRequestMailer < ActionMailer::Base
     @access_request = access_request
     @manager = @access_request.manager
     @user = @access_request.user
-    @url = "http://example.com/access_requests/#{access_request.id}"
+    @url = access_request_url(access_request)
     mail(:to => @manager.email,
           :subject => 'ACTION REQUIRED: Access request waiting for manager approval')
   end
@@ -44,16 +44,16 @@ class AccessRequestMailer < ActionMailer::Base
     @access_request = access_request
     @manager = @access_request.manager.blank? ? @access_request.user.manager : @access_request.manager
     @user = @access_request.user
-    @url = "http://example.com/access_requests/#{access_request.id}"
+    @url = access_request_url(access_request)
     mail(:to => @manager.email,
           :subject => "ACCESS REQUEST CANCELED: Request for #{access_request.user.full_name} has been canceled")
   end
-
+  
   def notify_resource_owner_of_assignment(access_request)
     @access_request = access_request
     @resource_owner = @access_request.resource_owner
     @user = @access_request.user
-    @url =  "http://example.com/access_requests/#{access_request.id}"
+    @url =  access_request_url(access_request)
     mail(:to => @resource_owner.email,
           :subject => 'ACTION REQUIRED: Access request waiting for resource owner approval')
   end
@@ -62,7 +62,7 @@ class AccessRequestMailer < ActionMailer::Base
     @access_request = access_request
     @user = help_desk_user
 
-    @url = "http://example.com/access_requests/#{access_request.id}"
+    @url = access_request_url(access_request)
     mail(:to => @user.email,
           :subject => 'ACTION REQUIRED: New access request waiting for help desk assignment')
   end
@@ -76,7 +76,7 @@ class AccessRequestMailer < ActionMailer::Base
 
   def notify_user_of_request_denial(access_request)
     @access_request = access_request
-    @user = @access_request.user
+    @user = @access_request.request.user
     mail(:to => @user.email,
           :subject => "Your request for access to #{@access_request.resource.long_name} has been denied")
   end
@@ -85,7 +85,7 @@ class AccessRequestMailer < ActionMailer::Base
     @user = user
     @count = count
     @url = root_url
-  mail(:to => @user.email, :subject => "You have #{@count} access requests awaiting your approval")
+    mail(:to => @user.email, :subject => "You have #{@count} access requests awaiting your approval")
   end
 
   def remind_owner_of_pending_acf(user,count,resources)

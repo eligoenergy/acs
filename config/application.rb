@@ -21,7 +21,7 @@ module Acs
 
     # Activate observers that should always be running
     # config.active_record.observers = :cacher, :garbage_collector, :forum_observer
-    config.active_record.observers = :user_observer, :access_request_observer, :name_observer
+    config.active_record.observers = :user_observer, :request_observer, :access_request_observer, :name_observer, :resource_observer
     # Set Time.zone default to the specified zone and make Active Record auto-convert to this zone.
     # Run "rake -D time" for a list of tasks for finding time zone names. Default is UTC.
     config.time_zone = 'Central Time (US & Canada)'
@@ -35,7 +35,7 @@ module Acs
     #   g.orm             :active_record
     #   g.template_engine :erb
       g.test_framework :rspec, :fixture => true, :views => false
-      g.fixture_replacement :factory_girl, :dir => "spec/factories"
+      # g.fixture_replacement :factory_girl, :dir => "spec/factories"
     end
 
     # Configure the default encoding used in templates for Ruby 1.9.
@@ -45,10 +45,6 @@ module Acs
     config.filter_parameters += [:password]
     # SSL config for production/staging only
     config.middleware.use Rack::SslEnforcer if Rails.env.production?
-        
-#   Below probably won't be needed in production'
-#    config.middleware.use Rack::SslEnforcer, :redirect_to => 'https://acs.example.com' if Rails.env.production?
-
   end
 end
 require 'aasm'
@@ -56,6 +52,3 @@ require 'chunk'
 require 'titleizer'
 require 'csv'
 require 'net-ldap'
-
-LDAP = YAML.load(File.open(File.join(Rails.root.to_s,'config/ldap.yml')))
-CSV_TYPES = YAML.load(File.open(File.join(Rails.root.to_s,'config/csv.yml')))

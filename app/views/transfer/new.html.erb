@@ -6,7 +6,7 @@
 </div>
 <div class="field">
   <%= f.label :job_id %>
-  <%= f.select :job_id, option_groups_from_collection_for_select(Department.alphabetical.includes(:jobs).all, :jobs, :name, :id, :name, @user.try(:job).try(:id)) %>
+  <%= f.select :job_id, option_groups_from_collection_for_select(Department.alphabetical.includes(:jobs).all, :active_jobs, :name, :id, :name, @user.try(:job).try(:id)) %>
 </div>
 <div class="field">
   <%= f.label :manager_id %>

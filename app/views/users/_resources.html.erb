@@ -4,11 +4,11 @@
     <p><%= user.full_name %> is not an owner of any resources</p>
   <% else %>
     <ul class="top_level_chunk">
-<% @resource_groups.each do |resource_group| %>
+      <% @resource_groups_with_ownerships.each do |resource_group| %>
   <li class="resource_groups collapsable">
     <h5 class="pivot"><%= resource_group.name %></h5>
     <ul>
-      <% resource_group.resources.includes(:users).alphabetical.chunker.each do |row| %>
+      <% resource_group.resources.includes(:users).owner_is(@user).alphabetical.chunker.each do |row| %>
         <li class="piece_of_chunk_container">
           <% row.each do |resource| %>
             <% next if resource.nil? %>

@@ -1,5 +1,6 @@
 class ResourceGroup < ActiveRecord::Base
   has_many :resources, :order => 'resources.name asc'
+  has_many :active_resources, :order => 'resources.name asc', :conditions => {:current_state => 'active'}, :class_name => 'Resource'
   has_many :permission_types
   
 #  acts_as_change_logger

@@ -1,10 +1,10 @@
 <% if current_user.hr? || current_user.descendants.include?(user) %>
   <% if !user.terminated? && user.active? %>
-    <%= button_to "Terminate #{user.full_name}", terminate_admin_user_path(user), :confirm => "Are you sure?", :class => 'awesome_button negative_awesome_button employee_actions', :id => 'terminate_user_button' %>
+    <%= real_button_to raw("<span class=\"trash icon\"></span>Terminate #{user.full_name}"), terminate_admin_user_path(user), :confirm => "Are you sure?", :class => 'button negative employee_actions', :id => 'terminate_user_button' %>
   <% end %>
   <% if user.active? %>
-    <%= button_to "Transfer Employee", transfer_new_path(:id => user.id), :class => 'awesome_button employee_actions'%>
-    <% end %>
+    <%= real_button_to raw("<span class=\"rightarrow icon\"></span>Transfer #{user.full_name}"), transfer_new_path(:id => user.id), :class => 'button employee_actions'%>
+  <% end %>
 <% end %>
 <% if current_user.hr? %>
   <% if user.terminated? %> 
@@ -28,7 +28,7 @@
     <%= render :partial => 'admin/users/resources_form', :locals => { :f => f } %>
   <% end %>
   <div class="actions">
-    <%= f.submit "Update Info", :class => 'awesome_button' %>
+    <button type="submit" class="centerish button"><span class="check icon"></span>Update Info</button>
   </div>
 <% end %>
 

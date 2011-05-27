@@ -8,11 +8,11 @@ set :rvm_type, :system
 # what user we login as. eg. username: ldapusername-otheruseryouwanttologinas, password: ldap password
 set :deploy_to, "/export/web/acs3"
 set :rails_env, :staging
-set :branch, "request_reasons"
+# set :branch, "css3buttons"
 
-role :web, "acs.example.com"                          # Your HTTP server, Apache/etc
-role :app, "acs.example.com"                          # This may be the same as your `Web` server
-role :db,  "acs.example.com", :primary => true # This is where Rails migrations will run
+role :web, "acs3.opssupport.cashnetusa.com"                          # Your HTTP server, Apache/etc
+role :app, "acs3.opssupport.cashnetusa.com"                          # This may be the same as your `Web` server
+role :db,  "acs3.opssupport.cashnetusa.com", :primary => true # This is where Rails migrations will run
 
 set :use_sudo, false
 
@@ -20,17 +20,17 @@ set :use_sudo, false
 # after "deploy:update_code", "deploy:start"
 
 namespace :deploy do
-  task :start do
-    run "cd #{File.join(deploy_to, "current")}; passenger start -a 127.0.0.1 -p 3001 -d -e staging --log-file #{File.join(deploy_to, "shared", "log", "passenger.3001.log")} --pid-file #{File.join(deploy_to, "shared", "tmp", "pids", "passenger.3001.pid")}"
-  end
+  # task :start do
+    # run "cd #{File.join(deploy_to, "current")}; passenger start -a 127.0.0.1 -p 3001 -d -e staging --log-file #{File.join(deploy_to, "shared", "log", "passenger.3001.log")} --pid-file #{File.join(deploy_to, "shared", "tmp", "pids", "passenger.3001.pid")}"
+  # end
 
-  task :stop  do
-    run "cd #{File.join(deploy_to, "current")}; passenger stop --port 3001 --pid-file #{File.join(deploy_to, "shared", "tmp", "pids", "passenger.3001.pid")}"
-  end
+  # task :stop  do
+    # run "cd #{File.join(deploy_to, "current")}; passenger stop --port 3001 --pid-file #{File.join(deploy_to, "shared", "tmp", "pids", "passenger.3001.pid")}"
+  # end
 
-  task :restart, :roles => :app, :except => { :no_release => true } do
-    run "touch #{File.join(current_path, "tmp/restart.txt")}"
-  end
+  # task :restart, :roles => :app, :except => { :no_release => true } do
+    # run "touch #{File.join(current_path, "tmp/restart.txt")}"
+  # end
 
   task :update_shared_symlinks do
     %w(config/database.yml).each do |path|

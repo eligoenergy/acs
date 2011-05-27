@@ -10,15 +10,13 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110309194306) do
+ActiveRecord::Schema.define(:version => 20110526140918) do
 
   create_table "access_requests", :force => true do |t|
-    t.integer  "user_id",                                   :null => false
-    t.integer  "created_by_id",                             :null => false
-    t.integer  "resource_id",                               :null => false
+    t.integer  "resource_id",                              :null => false
     t.integer  "current_worker_id"
-    t.string   "request_action",                            :null => false
-    t.string   "current_state",     :default => "pending",  :null => false
+    t.string   "request_action",                           :null => false
+    t.string   "current_state",     :default => "pending", :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "manager_id"
@@ -26,17 +24,15 @@ ActiveRecord::Schema.define(:version => 20110309194306) do
     t.integer  "help_desk_id"
     t.datetime "completed_at"
     t.integer  "completed_by_id"
-    t.boolean  "for_new_user",      :default => false
-    t.boolean  "historical",        :default => false,      :null => false
+    t.boolean  "historical",        :default => false,     :null => false
     t.integer  "hr_id"
-    t.string   "reason",            :default => "standard", :null => false
+    t.integer  "request_id"
+    t.integer  "position"
   end
 
-  add_index "access_requests", ["created_by_id"], :name => "index_access_requests_on_created_by_id"
   add_index "access_requests", ["current_worker_id"], :name => "index_access_requests_on_current_worker_id"
-  add_index "access_requests", ["reason", "request_action"], :name => "index_access_requests_on_reason_and_request_action"
-  add_index "access_requests", ["request_action", "reason"], :name => "index_access_requests_on_request_action_and_reason"
-  add_index "access_requests", ["user_id"], :name => "index_access_requests_on_user_id"
+  add_index "access_requests", ["request_id", "position"], :name => "index_access_requests_on_request_id_and_position"
+  add_index "access_requests", ["request_id"], :name => "index_access_requests_on_request_id"
 
   create_table "change_logs", :force => true do |t|
     t.integer  "item_id",        :null => false
@@ -73,12 +69,13 @@ ActiveRecord::Schema.define(:version => 20110309194306) do
   add_index "employment_types", ["name"], :name => "index_employment_types_on_name"
 
   create_table "jobs", :force => true do |t|
-    t.integer  "department_id",                :null => false
-    t.string   "name",                         :null => false
+    t.integer  "department_id",                       :null => false
+    t.string   "name",                                :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "lawson_cd"
-    t.integer  "revision",      :default => 1, :null => false
+    t.integer  "revision",      :default => 1,        :null => false
+    t.string   "current_state", :default => "active", :null => false
   end
 
   add_index "jobs", ["department_id", "name"], :name => "index_jobs_on_department_id_and_name"
@@ -153,10 +150,11 @@ ActiveRecord::Schema.define(:version => 20110309194306) do
   add_index "permission_types", ["resource_group_id"], :name => "index_permission_types_on_resource_group_id"
 
   create_table "permissions", :force => true do |t|
-    t.integer  "permission_type_id", :null => false
-    t.integer  "resource_id",        :null => false
+    t.integer  "permission_type_id",                   :null => false
+    t.integer  "resource_id",                          :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.boolean  "activated",          :default => true
   end
 
   add_index "permissions", ["permission_type_id", "resource_id"], :name => "index_permissions_on_permission_type_id_and_resource_id"
@@ -181,6 +179,20 @@ ActiveRecord::Schema.define(:version => 20110309194306) do
     t.datetime "updated_at"
   end
 
+  create_table "requests", :force => true do |t|
+    t.integer  "user_id",                               :null => false
+    t.integer  "created_by_id",                         :null => false
+    t.string   "reason",        :default => "standard", :null => false
+    t.string   "current_state", :default => "pending",  :null => false
+    t.datetime "completed_at"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "requests", ["current_state"], :name => "index_requests_on_current_state"
+  add_index "requests", ["reason"], :name => "index_requests_on_reason"
+  add_index "requests", ["user_id"], :name => "index_requests_on_user_id"
+
   create_table "resource_groups", :force => true do |t|
     t.string   "name",       :null => false
     t.datetime "created_at"
@@ -190,10 +202,11 @@ ActiveRecord::Schema.define(:version => 20110309194306) do
   add_index "resource_groups", ["name"], :name => "index_resource_groups_on_name"
 
   create_table "resources", :force => true do |t|
-    t.string   "name",              :null => false
+    t.string   "name",                                    :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "resource_group_id"
+    t.string   "current_state",     :default => "active", :null => false
   end
 
   add_index "resources", ["name"], :name => "index_resources_on_name"

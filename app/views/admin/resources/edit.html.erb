@@ -1,5 +1,9 @@
+<% if @resource.active? %>
+  <%= real_button_to raw("<span class=\"cross icon\"></span>Deactivate"), admin_resource_path(@resource), :method => :delete, :class => 'new_obj_link negative button', :confirm => "Are you sure you want to deactivate #{@resource.name}?" %>
+<% else %>
+  <%= real_button_to raw("<span class=\"plus icon\"></span>Activate"), admin_resource_activate_path(@resource), :class => 'new_obj_link button' %>
+<% end %>
 <h3>Editing resource</h3>
-
 <%= form_for([:admin,@resource]) do |f| %>
   <% if @resource.errors.any? %>
     <div id="error_explanation">

@@ -1,4 +1,6 @@
-example:
-  name: Example Company
-  email_domain: example.com
-
+enova:
+  name: Enova Financial
+  email_domain: enovafinancial.com
+casham:
+  name: Cash America
+  email_domain: casham.com

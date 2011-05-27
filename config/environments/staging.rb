@@ -49,14 +49,14 @@ Acs::Application.configure do
   config.action_mailer.raise_delivery_errors = true
 
   config.action_mailer.smtp_settings = {
-    :address              => "example.com",
+    :address              => App.email[:smtp][:address],
     :port                 => 25,
-    :domain               => "example.com",
+    :domain               => App.email[:smtp][:domain],
     :enable_starttls_auto => false
   }
   config.middleware.use ExceptionNotifier,
-    :email_prefix => "[ACS-DEV EXCEPTION] ",
-    :sender_address => %{"acs-notification" <acs-notification@example.com>},
-    :exception_recipients => %w{acsdevelopment@example.com}
-  
+    :email_prefix => App.email[:exceptions][:prefix],
+    :sender_address => App.email[:from],
+    :exception_recipients =>  App.email[:exceptions][:recipients]    
+    
 end

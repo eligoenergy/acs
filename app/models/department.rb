@@ -1,6 +1,7 @@
 class Department < ActiveRecord::Base
   belongs_to :location
   has_many :jobs, :order => 'jobs.name asc'
+  has_many :active_jobs, :order => 'jobs.name asc', :conditions => {:current_state => 'active' }, :class_name => 'Job'
   has_many :users, :through => :jobs
   has_many :managers, :class_name => 'User',
     :finder_sql => "select * from users u
@@ -33,4 +34,5 @@ class Department < ActiveRecord::Base
     end
     results.flatten
   end
+  
 end

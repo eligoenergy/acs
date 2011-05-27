@@ -3,8 +3,6 @@ module AccessRequests
     def validate(record)
       @record = record
       # if a user can't actively change the value of an attribute, it shouldn't be validated here, but I have done that for a few attributes below anyway, just in case. need to investigate further
-      @record.errors[:base] << "An Access Request must be created for an employee" if @record.user.blank?
-      @record.errors[:base] << "An Access Request must have a creator" if @record.created_by.blank?
       @record.errors[:base] << "An Access Request needs to be for a resource" if @record.resource.blank?
       @record.errors[:base] << "An Access Request must grant or deny access" if @record.request_action.blank?
       @record.errors[:base] << "You must select at least one permission" if @record.permission_requests.any? {|permission_request| permission_request.permission_id.nil? }
@@ -56,7 +54,7 @@ module AccessRequests
     end
 
     def validate_does_not_already_have_access
-      @record.user.permissions.any? do |permission|
+      @record.request.user.permissions.any? do |permission|
         @record.permission_requests.any? {|pr| pr.permission == permission }
       end
     end
@@ -71,14 +69,14 @@ module AccessRequests
 
     def validate_no_open_requests_for_this_resource
       # if statement below will check for access_requests with same permission, may be better to do it that way, but will revisit in the future
-      if @record.user.access_requests.not_completed.but_not(@record).any? {|ar| ar.permission_requests.any? {|pr| @record.permission_requests.map(&:permission).include?(pr.permission) } } #@record.resource == ar.resource }
+      if @record.request.user.access_requests.not_completed.but_not(@record).any? {|ar| ar.permission_requests.any? {|pr| @record.permission_requests.map(&:permission).include?(pr.permission) } } #@record.resource == ar.resource }
       #if @record.user.access_requests.not_completed.but_not(@record).any? {|ar| @record.resource == ar.resource }
         @record.errors[:base] << "An employee can not have two Access Requests for the same permission open at the same time"
       end
     end
 
     def validate_not_for_current_worker
-      if @record.user == @record.current_worker
+      if @record.request.user == @record.current_worker
         @record.errors[:base] << "You can't process an Access Request that is for you"
       end
     end

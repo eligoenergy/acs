@@ -4,6 +4,7 @@ module Acs
       record.errors[:first_name] << "is required for every employee" if record.first_name.blank?
       record.errors[:last_name] << "is required for every employee" if record.last_name.blank?
       record.errors[:job] << "is required" if record.job.blank?
+      recorr.errors[:job] << "must be active" if !record.job.blank? && record.job.deactivated?
       record.errors[:roles] << "are required" if record.roles.blank?
       record.errors[:employment_type] << "is required" if record.employment_type.blank?
       # validation below is a bit of a safety net. When creating a user, a similar error should prevent a user from getting to the point where the record is actually saved.

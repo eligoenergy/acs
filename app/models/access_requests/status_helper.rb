@@ -85,14 +85,14 @@ module AccessRequests
       status = if box == :initial_request
         STATUS[box]
       else
-        STATUS[self.reason.to_sym][self.aasm_current_state][box]
+        STATUS[self.request.reason.to_sym][self.aasm_current_state][box]
       end
       status.is_a?(Proc) ? status.call(self) : status
     end
 
     def path_to_partial(box)
       path = 'access_requests/boxes/'
-      if self.reason == AccessRequest::REASONS[:standard]
+      if self.request.reason == AccessRequest::REASONS[:standard]
         path += 'standard'
       else
         path += 'skipped'

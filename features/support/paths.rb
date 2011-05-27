@@ -18,6 +18,8 @@ module NavigationHelpers
       '/admin/users'
     when /the admin users edit page for "([^"]*)"/
       "/admin/users/#{User.find(fixture($1)).id}/edit"
+    when /the show request page for "([^"]*)"$/  
+      "/requests/#{Request.find(fixture($1)).id}"
     when /the show access request page for "([^"]*)"$/
       "/access_requests/#{AccessRequest.find(fixture($1)).id}"
     when /the manager approval page for "([^"]*)"/

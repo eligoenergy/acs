@@ -6,7 +6,7 @@
       <p>Line <strong><%=h @validity[idx][0] %></strong>; Is line format valid? <strong><%=h @validity[idx][1]%></strong></p>
       <table class='awesome_tables'>
         <tr>
-          <% CSV_TYPES['types'][@type].each do |hd| %>
+          <% App.csv[@type].each do |hd| %>
             <th><%=h hd.to_s.titleize %></th>
           <% end %>
           <th></th>

@@ -43,7 +43,7 @@
       <%= select_tag :company_id, options_for_select([''] + Company.all.map{|c| [c.name, c.id]}, params[:company_id]) %>
     </div>
     <div class="actions">
-      <input type="submit" value="Search" class="awesome_button" />
+      <button type="submit" class="centerish button"><span class="magnifier icon"></span>Search</button>
     </div>
   </div>
 <% end %>

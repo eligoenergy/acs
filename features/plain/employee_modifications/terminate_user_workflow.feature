@@ -1,4 +1,3 @@
-@now
 Feature: terminate a user
   As a manager or hr
   I want to terminate a subordinate
@@ -12,20 +11,17 @@ Feature: terminate a user
     And I press "Next Step"
     And I press "Terminate Dan"
     Then the user "dengle" should be "suspended"
-    And there should be 3 access request for "dengle"
-    And the access request should request to "revoke"
-    And the access request reason should be "termination"
-    And the access request should be "waiting_for_help_desk_assignment"
-    And the access request should be created by the manager of "dengle"
-    And the access request should have 1 permission request
-    And the permission request should be for "cnu_portal_executive"
-    And the permission request should be approved by "manager"
-    And the permission request should not be approved by "hr"
-    And the permission request should not be approved by "resource_owner"
+    And "dengle" should have a request with 3 access requests created for them
+    And the request reason should be "termination"
+    And the request should be by manager for subordinate
+    And the requests access requests should request to "revoke"
+    And the requests access requests should be "waiting_for_help_desk_assignment"
+    And all permission requests should be approved by "manager"
+    And all permission requests should not be approved by "hr"
+    And all permission requests should not be approved by "resource_owner"
     And I should see "Termination request has been sent to hr for verification."
     And I should be on the user page for "dengle"
 
-  @thiss
   Scenario: hr approves manager termination request
     Given I am logged in as "nott"
     And I follow "Johnny Rocket"
@@ -49,16 +45,14 @@ Feature: terminate a user
     And I follow the link to user "dengle"
     And I press "Terminate Dan Engle"
     Then the user "dengle" should be "terminated"
-    And there should be 3 access request for "dengle"
-    And the access request should request to "revoke"
-    And the access request reason should be "termination"
-    And the access request should be "waiting_for_help_desk_assignment"
-    And the access request should be created by "nott"
-    And the access request should have 1 permission request
-    And the permission request should be for "cnu_portal_executive"
-    And the permission request should not be approved by "manager"
-    And the permission request should be approved by "hr"
-    And the permission request should not be approved by "resource_owner"
+    And "dengle" should have a request with 3 access requests created for them
+    And the request reason should be "termination"
+    And the request should be created by "nott"
+    And the requests access requests should request to "revoke"
+    And the requests access requests should be "waiting_for_help_desk_assignment"
+    And all permission requests should not be approved by "manager"
+    And all permission requests should be approved by "hr"
+    And all permission requests should not be approved by "resource_owner"
     And I should see "Help desk has been notified of termination."
     And I should be on the user page for "dengle"
 

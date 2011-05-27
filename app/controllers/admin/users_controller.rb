@@ -37,29 +37,21 @@ class Admin::UsersController < ApplicationController
   end
 
   def create
-    @user = User.new(params[:user])    
-    @user.submitted_by = current_user
+    @user = User.new(params[:user].merge(:submitted_by => current_user))
     if current_user.hr? && @user.save
-      @user.activate!
-      Resource.for_job(@user.job).all.each do |resource|
-        access_request = AccessRequest.create(
-          :request_action => AccessRequest::ACTIONS[:grant],
-          :resource => resource,
-          :permission_ids => resource.permissions.map{|perm| perm.id if perm.resource == resource }.compact,
-          :user => @user,
-          :created_by => @user.submitted_by || current_user,
-          :reason => AccessRequest::REASONS[:new_hire]
-        )
-        access_request.grant_all_permissions
-        access_request.send_to_help_desk!
-      end
-      @user.permissions.clear
+      @user.generate_future_employee_request!(
+        :created_by => @user.submitted_by,
+        :hr => current_user,
+        :manager => @user.submitted_by.descendants.include?(@user) ? @user.submitted_by : nil,
+        :end_action => :activate!
+      )
+      # TODO wrap in an error catch block in case something unexpected happens on save
       flash[:notice] = "Successfully created new user and notified help desk"
-      redirect_to dashboard_path
+      redirect_to @user
     elsif current_user.manager? && @user.save
       @user.verify_with_hr!
       flash[:notice] = "Successfully created new employee and notified HR for approval"
-      redirect_to dashboard_path
+      redirect_to @user
     else
       @permissions = @user.job.permissions.includes(:permission_type)
       @managers = User.managers.alphabetical_login.all
@@ -105,7 +97,7 @@ class Admin::UsersController < ApplicationController
       @file << row unless row.blank?
     end
     @type = params[:upload][:filetype]
-    @columns = CSV_TYPES['types'][@type]
+    @columns = App.csv[:types][@type]
     @validity = User.verify_csv_length(@file, @type)
     @results = User.import_from_csv(@validity, @file, @type, current_user, params[:note])
     render :controller => 'admin/users_controller', :action => "summary"
@@ -124,32 +116,21 @@ class Admin::UsersController < ApplicationController
         @user.direct_manager_of.each do |u|
           u.update_attribute(:manager, @user.manager)
         end
-      end  
-      @user.access_requests.not_completed.each{ |access_request| access_request.cancel! }
-      Resource.user_has_access(@user).each do |resource|
-        access_request = @user.access_requests.create(
-          :request_action => AccessRequest::ACTIONS[:revoke],
-          :reason => AccessRequest::REASONS[:termination],
-          :created_by => @user.terminated_by || current_user,
-          :manager => @user.manager,
-          :resource => resource,
-          :permission_ids => @user.permissions.where(:resource_id => resource.id).all.map{|p| p.id}
-        )
-        access_request.approve_all_permission_requests
-        access_request.send_to_help_desk!
       end
+      @user.access_requests.not_completed.each{ |access_request| access_request.cancel! }
+      @user.generate_termination_request!(
+        :created_by => current_user,
+        :terminated_by => current_user,
+        :end_action => current_user.hr? ? :terminate! : :suspend!
+      )
     end
     if current_user.hr?
-      @user.terminated_by = current_user if @user.terminated_by.blank?
-      @user.terminate!
+      @user.terminate! if @user.suspended?
       flash[:notice] = "Help desk has been notified of termination."
-      redirect_to user_path(@user)
     elsif @user.ancestors.include?(current_user)
-      @user.terminated_by = current_user
-      @user.suspend!
       flash[:notice] = "Termination request has been sent to hr for verification. Help desk has been notified of termination."
-      redirect_to user_path(@user)
     end
+    redirect_to user_path(@user)
   end
 
   def reactivate
@@ -161,33 +142,20 @@ class Admin::UsersController < ApplicationController
   
   def hr_confirm
     @user = User.find(params[:id])
-    if current_user.hr?
-      Resource.for_job(@user.job).all.each do |resource|
-        access_request = AccessRequest.create(
-          :request_action => AccessRequest::ACTIONS[:grant],
-          :reason => AccessRequest::REASONS[:new_hire],
-          :resource => resource,
-          :permission_ids => @user.job.permissions.map{|perm| perm.id if perm.resource == resource }.compact,
-          :user => @user,
-          :created_by => @user.submitted_by || current_user,
-          :for_new_user => true,
-          :hr => current_user
-        )
-        access_request.grant_all_permissions
-        access_request.send_to_help_desk!
-      end
-      @user.verified_by_hr!
-      @user.permissions.clear
-    end
-    redirect_to user_path(@user)
+    @request = @user.generate_future_employee_request!(
+      :created_by => @user.submitted_by,
+      :manager => @user.submitted_by,
+      :hr => current_user,
+      :end_action => :activate!
+    )
+    flash[:notice] = "#{@user.full_name} has been confirmed and their initial access requests have been generated."
+    redirect_to @user
   end
 
   def hr_veto
-    @user = User.find(params[:id])
-    if current_user.hr?
-      @user.suspend!
-    end
-    redirect_to user_path(@user)
+    @user = User.find(params[:id])    
+    @user.suspend!
+    redirect_to @user
   end
   
   protected

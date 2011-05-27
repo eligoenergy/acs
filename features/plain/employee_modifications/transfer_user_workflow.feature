@@ -7,8 +7,7 @@ Feature: transer a user
     Given I am logged in as "rcooper"
     And "dengle" is my subordinate
     When I go to the user page for "dengle"
-    And I should see a button with a value of "'Transfer Employee'"
-    And I press "Transfer employee"
+    And I press "Transfer Dan Engle"
     Then I should be on the transfer page for "dengle"
 # This test is incomplete until i can figure out how to select new values in the Job and Manager fields
 #    And I unselect "rcooper" from "user_manager_id"

@@ -36,21 +36,20 @@ Acs::Application.configure do
   # Disable delivery errors, bad email addresses will be ignored
 
   config.action_mailer.smtp_settings = {
-  :address              => "example.com",
-  :port                 => 25,
-  :domain               => "example.com",
-  :enable_starttls_auto => false
+    :address              => App.email[:smtp][:address],
+    :port                 => 25,
+    :domain               => App.email[:smtp][:domain],
+    :enable_starttls_auto => false
   }
 
   config.action_mailer.raise_delivery_errors = true
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.perform_deliveries = true
-  config.action_mailer.default_url_options = { :host => "example.com" }
 
   config.middleware.use ExceptionNotifier,
-    :email_prefix => "[ACS EXCEPTION] ",
-    :sender_address => %{"acs-notification" <acs-notification@example.com>},
-    :exception_recipients => %w{acsdevelopment@example.com}
+  :email_prefix => App.email[:exceptions][:prefix],
+    :sender_address => App.email[:from],
+    :exception_recipients => App.email[:exceptions][:recipients]
   # Enable threaded mode
   # config.threadsafe!
 

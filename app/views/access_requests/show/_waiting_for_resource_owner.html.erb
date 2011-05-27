@@ -34,8 +34,6 @@
         <%= text_area_tag "access_request[notes_attributes][][body]", '', :placeholder => 'A note is required' %>
       </td>
     </tr>
-  </table>
-  <div>
-    <%= f.submit "Process Request", :class => 'awesome_button' %>
-  </div>
+  </table>  
+  <button type="submit" class="centerish button"><span class="check icon"></span>Process Request</button>
 <% end %>

@@ -2,9 +2,9 @@
 <div id="auto_refresh">
 <% if auto_refresh? %>
   <meta http-equiv="REFRESH" content="60">
-  <%= button_to "Autorefresh Off", auto_refresh_path, :class => 'new_obj_link awesome_button' %>
+  <%= real_button_to raw("<span class=\"reload icon\"></span>Autorefresh Off"), auto_refresh_path, :class => 'new_obj_link button' %>
 <% else %>
-  <%= button_to "Autorefresh On", auto_refresh_path, :class => 'new_obj_link awesome_button' %>
+  <%= real_button_to raw("<span class=\"reload icon\"></span>Autorefresh On"), auto_refresh_path, :class => 'new_obj_link button' %>
 <% end %>
 </div>
 <h1>Dashboard</h1>
@@ -17,5 +17,4 @@
 <%= render :partial => 'termination_requests' %>
 <%= render :partial => 'help_desk_requests' %>
 <%= render :partial => 'recent_activity' %>
-
 <%= render :partial => 'users/permissions', :locals => {:user => current_user } %>

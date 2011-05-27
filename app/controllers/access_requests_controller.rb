@@ -20,6 +20,8 @@ class AccessRequestsController < ApplicationController
   # GET /access_requests/1.xml
   def show
     @access_request = AccessRequest.find(params[:id])
+    @request = @access_request.request
+    # @access_request = @request.access_requests.find(params[:id])
     @note = @access_request.notes.new
     respond_to do |format|
       format.html # show.html.erb
@@ -41,32 +43,33 @@ class AccessRequestsController < ApplicationController
 
   # GET /access_requests/new/permissions
   def permissions
-    # TODO the two checks below should be moved to the model...
-    if params[:access_request] && params[:access_request][:user_id]
-      unless params[:access_request][:user_id] == "For Myself"
-        user = User.find(params[:access_request][:user_id])
-        unless user.active?
-          flash[:error] = "Oops! You can only request permissions for active users. Please wait for hr to confirm this employees status."
-          redirect_to new_access_request_path and return
-        end
+    # TODO the two checks below should be moved to the model...    
+    if params[:user_id].blank? || params[:user_id] == "For Myself"
+      @user = current_user
+    else
+      @user = User.active.find(params[:user_id])
+      if @user.blank? || !current_user.can_request_access_for?(@user)
+        flash[:error] = "Oops! You are unable to request access for that user."
+        redirect_to new_access_request_path and return
       end
     end
+    
     if params[:resource_ids].blank?
       flash[:error] = "Oops! You forgot to select a resource. Please select at least one resource"
       redirect_to new_access_request_path and return
     end
+    @request = Request.new(
+      :reason => Request::REASONS[:standard],
+      :created_by => current_user,
+      :user => @user
+    )    
     @access_requests = []
     @resources = Resource.find_all_by_id(params[:resource_ids])
     @resources.each do |resource|
-      @access_request = AccessRequest.new
-      @access_request.resource = resource
-      @access_request.created_by = current_user
-      @access_request.request_action = AccessRequest::ACTIONS[:grant]
-      if params[:access_request].blank? || params[:access_request][:user_id] == "For Myself"
-        @access_request.user = current_user
-      else
-        @access_request.user = User.find(params[:access_request][:user_id])
-      end
+      @access_request = @request.access_requests.new(
+        :resource => resource,
+        :request_action => AccessRequest::ACTIONS[:grant]
+      )
       @access_requests << @access_request
     end
   end
@@ -77,12 +80,11 @@ class AccessRequestsController < ApplicationController
   # although, revoke_access can create access_requests for multiple resources which
   # could complicate things here instead of making them simpler
   def create
+    @request = Request.create(params[:request].merge(:created_by => current_user))
     @access_requests = []
     params[:access_request].each_value do |value|
-      access_request = AccessRequest.new(
-        :request_action => AccessRequest::ACTIONS[:grant],
-        :created_by => current_user,
-        :user_id => params[:access_requests][:user_id],
+      access_request = @request.access_requests.build(
+        :request_action => AccessRequest::ACTIONS[:grant],        
         :resource_id => value[:resource_id]
       )
       access_request.permission_requests.build(value["permission_requests_attributes"])
@@ -90,29 +92,38 @@ class AccessRequestsController < ApplicationController
       @access_requests << access_request
     end
     while @access_request = @access_requests.pop
-    if @access_request.valid?
-      if current_user.can_request_access_for?(@access_request.user)
-        if @access_request.by_manager_for_subordinate?
-          @access_request.manager = current_user
-          @access_request.save
-          @access_request.approve_all_permission_requests
-          @access_request.send_to_resource_owners!
-          flash[:notice] = "Resource owners have been notified about your access request."
+      if @access_request.valid?
+        if current_user.can_request_access_for?(@request.user)
+          if @request.created_by_manager_for_subordinate?
+            @access_request.manager = current_user
+            @access_request.save
+            @access_request.approve_all_permission_requests(@request.reason)
+            flash[:notice] = "Resource owners have been notified about your access request."
+          else
+            @access_request.save
+            flash[:notice] = "Access request has been sent to your manager."
+          end
+        # TODO FIXME this doesn't make sense here, the request has already been created
+        # so it should be too late to not be allowed
         else
-          @access_request.save
-          @access_request.send_to_manager!
-          flash[:notice] = "Access request has been sent to your manager."
+          @request.destroy
+          flash[:error] = "You aren't allowed to do that."
+          redirect_to dashboard_path and return
         end
       else
-        flash[:error] = "You aren't allowed to do that."
+        @access_requests << @access_request
+        render 'permissions'
+        break
       end
-    else
-      @access_requests << @access_request
-      render 'permissions'
-      break
     end
-   end
-   redirect_to dashboard_path if @access_requests.empty?
+    @request.start!
+    # TODO FIXME if users don't enter a note, the request won't transition to in_progress
+    # and there will be 'pending' requests left around. This should prevent those,
+    # but a much better solution would be to refactor the code above and corresponding
+    # view code so that #pop loop above isn't necessary. "Look of disapproval" towards Roland!
+    @request.reload # just to be safe here, even though I'm against excessive reloads
+    @request.destroy if @request.pending?      
+    redirect_to dashboard_path if @access_requests.empty?
   end
 
   # PUT /access_requests/1
@@ -133,14 +144,14 @@ class AccessRequestsController < ApplicationController
   def manager_approval
     @access_request = AccessRequest.find(params[:id])
     # TODO move this into a before_filter
-    unless current_user.descendants.include?(@access_request.user)
-      flash[:error] = "You're not a manager of #{@access_request.user.full_name}."
-      redirect_to dashboard_path and return
+    unless current_user.descendants.include?(@access_request.request.user)
+      flash[:error] = "You're not a manager of #{@access_request.request.user.full_name}."
+      redirect_to @access_request and return
     end
     @access_request.attributes = {"manager_approval_attributes" => {}}.merge(params[:access_request])
     if @access_request.valid? && @access_request.save
       if @access_request.manager_denied_all?
-        flash[:notice] = "Denying request."
+        flash[:notice] = "All permissions have been denied."
         @access_request.deny!
       else
         if @access_request.resource.has_one_owner?
@@ -156,6 +167,7 @@ class AccessRequestsController < ApplicationController
       @note = @access_request.notes.new
       @note.body = params[:access_request][:notes_attributes].first[:body] unless params[:access_request][:notes_attributes].first[:body] .blank?
       @access_request.reload
+      @request = @access_request.request
       render 'show'
     end
   end
@@ -186,6 +198,7 @@ class AccessRequestsController < ApplicationController
       @note = @access_request.notes.new
       @note.body = params[:access_request][:notes_attributes].first[:body] unless params[:access_request][:notes_attributes].first[:body] .blank?
       @access_request.reload
+      @request = @access_request.request
       render 'show'
     end
   end
@@ -222,20 +235,15 @@ class AccessRequestsController < ApplicationController
     if params[:resources].blank?
       flash[:error] = "You need to select at least one permission to revoke."
       @access_request = @user.access_requests.new
+      @resource_groups = ResourceGroup.accessible_by(@user).alphabetical.all
       @resources_with_permissions = Resource.user_has_access(@user).all
       render 'choose_permissions' and return
     end
-    params[:resources].each_pair do |resource_id, attributes|
-      access_request = @user.access_requests.create(
-        :created_by => current_user,
-        :resource_id => resource_id,
-        :manager => current_user,
-        :request_action => AccessRequest::ACTIONS[:revoke],
-        :reason => AccessRequest::REASONS[:revoke],
-        :permission_ids => attributes[:permission_ids]
-      )
-      access_request.send_revoke_request_to_help_desk!
-    end
+    @user.generate_revoke_request!(
+      :created_by => current_user,
+      :resources => params[:resources]
+    )
+
     flash[:notice] = "Request to revoke access for #{@user.full_name} has been sent to help desk."
     redirect_to dashboard_path
   end
@@ -248,7 +256,7 @@ class AccessRequestsController < ApplicationController
   end
 
   def help_desk
-    @access_requests = AccessRequest.with_extra_info.at_help_desk.by_importance.all
+    @requests = Request.with_extra_info.at_help_desk.by_importance.all
   end
   # DELETE /access_requests/1
   # DELETE /access_requests/1.xml

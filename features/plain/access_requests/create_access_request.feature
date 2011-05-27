@@ -1,3 +1,4 @@
+@now
 Feature: employee requests additional access request
   As an employee
   I want to request access
@@ -11,13 +12,12 @@ Feature: employee requests additional access request
     And press "Next Step"
 		And I check "admin"
     And I fill in "access_request_0_notes_attributes_body" with "yes please"
-    And I press "Save"
-    Then an Access Request should be created for me
-    And the access request should be "waiting_for_manager"
-    And the access request reason should be "standard"
-    And it should have a permission request for "admin" access
-    And it should be for "Cyberark"
-    And it should be assigned to my manager
+    And I press "Request Access"
+    Then "dengle" should have a request with 1 access requests created for them
+    And the request reason should be "standard"
+    And the requests access requests should be "waiting_for_manager"
+    And the requests access requests should be assigned to "rcooper"
+    And the access request for "cyberark" should request "admin" access
 		And I should see "Access request has been sent to your manager."
 
   Scenario: request access to a resource that you already have a pending access request for
@@ -33,17 +33,16 @@ Feature: employee requests additional access request
     Given I am logged in as "rcooper"
     And "dengle" is my subordinate
     When I go to the new access request page
-    And I select "dengle" from "access_request_user_id"
+    And I select "dengle" from "user_id"
     And I check "Cyberark"
     And I press "Next Step"
     And I check "admin"
     And I fill in "access_request_0_notes_attributes_body" with "its useful"
-    And I press "Save"
-    Then an Access Request should be created for "dengle"
-    And the access request should be "waiting_for_resource_owner_assignment"
-    And the access request reason should be "standard"
-    And it should have a permission request for "admin" access
-    And it should be for "Cyberark"
-    And the access request should be "waiting_for_resource_owner_assignment"
+    And I press "Request Access"
+    Then "dengle" should have a request with 1 access requests created for them
+    And the request reason should be "standard"
+    And the request state should be "in_progress"
+    And the requests access requests should be "waiting_for_resource_owner"
+    And the access request for "cyberark" should request "admin" access
     And I should see "Resource owners have been notified about your access request"
 

@@ -1,74 +1,61 @@
 dengle_cnu_portal:
-  created_by: dengle
-  user: dengle
+  request: dengle_cnu_portal
   resource: cnu_portal
   request_action: grant
-  reason: standard
   current_state: waiting_for_manager
   manager: rcooper
   current_worker: rcooper
-  for_new_user: false
+  position: 1
 dengle_uk_portal_resource_owner:
-  created_by: dengle
-  user: dengle
+  request: dengle_uk_portal_resource_owner
   resource: uk_portal
   request_action: grant
-  reason: standard
-  current_state: waiting_for_resource_owner_assignment
+  current_state: waiting_for_resource_owner
   manager: rcooper
-  for_new_user: false
+  resource_owner: timothyho
+  current_worker: timothyho
+  position: 1
 dengle_wiki_help_desk:
-  created_by: dengle
-  user: dengle
+  request: dengle_wiki_help_desk
   resource: wiki
   request_action: grant
-  reason: standard
   current_state: waiting_for_help_desk_assignment
   manager: rcooper
   resource_owner: mgroulx
-  for_new_user: false
+  position: 1
 dengle_revoke_acunote_help_desk:
-  created_by: rcooper
-  user: dengle
+  request: dengle_revoke_acunote_help_desk
   resource: acunote
   request_action: revoke
-  reason: revoke
   current_state: waiting_for_help_desk_assignment
   manager: rcooper
-  for_new_user: false
+  position: 1
 rcooper_wiki_help_desk:
-  created_by: rcooper
-  user: rcooper
+  request: rcooper_wiki_help_desk
   resource: wiki
   request_action: grant
-  reason: standard
   current_state: waiting_for_help_desk
   manager: timothyho
   resource_owner: mgroulx
   help_desk: mstreet
-  for_new_user: false
+  position: 1
 alee_cyberark_admin:
-  created_by: alee
-  user: alee
+  request: alee_cyberark_admin
   resource: cyberark
   request_action: grant
-  reason: standard
   current_state: denied
   manager: odolchenko
-  for_new_user: false
   completed_at: <%= Time.now - 30 %>
+  position: 1
 rcooper_acunote_admin:
-  created_by: rcooper
-  user: rcooper
+  request: rcooper_acunote_admin
   resource: acunote
   request_action: grant
-  reason: standard
   current_state: waiting_for_resource_owner_assignment
   manager: timothyho
-  for_new_user: false
+  position: 1
 dengle_jira_admin_complete:
-  created_by: dengle
-  user: dengle
+  request: dengle_jira_admin_complete
   manager: rcooper
   resource_owner: mgroulx
   help_desk: mstreet
@@ -76,44 +63,33 @@ dengle_jira_admin_complete:
   completed_at: <%= Time.now - 10 %>
   resource: jira
   request_action: grant
-  reason: standard
   current_state: completed
-  for_new_user: false
-  historical: false
+  position: 1
 jfaceless_wiki_waiting_for_help_desk_assignment:
-  created_by: nott
-  user: jfaceless
+  request: jfaceless_wiki_waiting_for_help_desk_assignment
   resource: wiki
   request_action: grant
-  reason: new_hire
-  current_state: waiting_for_help_desk_assignment  
-  historical: false
+  current_state: waiting_for_help_desk_assignment
+  position: 1
 egarret_wiki_canceled:
-  created_by: egarret
-  user: egarret
+  request: egarret_wiki_canceled
   resource: wiki
   request_action: grant
   manager: odolchenko
-  current_state: canceled  
-  historical: false
+  current_state: canceled
+  position: 1
 holajuwon_wiki_waiting_for_help_desk_assignment:
-  created_by: holajuwon
-  user: holajuwon
+  request: holajuwon_wiki_waiting_for_help_desk_assignment
   resource: wiki
   request_action: revoke
-  reason: termination
   manager: odolchenko
   current_state: waiting_for_help_desk_assignment
-  for_new_user: false
-  historical: false
+  position: 1
 jserrano_wiki_waiting_for_manager:
-  created_by: jserrano
-  user: jserrano
+  request: jserrano_wiki_waiting_for_manager
   resource: wiki
   request_action: grant
-  reason: standard
   manager: mstreet
   current_state: waiting_for_manager
-  for_new_user: false
-  historical: false
   current_worker: mstreet
+  position: 1

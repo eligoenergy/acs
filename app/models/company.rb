@@ -1,15 +1,5 @@
 class Company < ActiveRecord::Base
-  COMPANIES = {
-    :example => {
-      :name => 'Example',
-      :email_domain => 'example.com'
-    },
-    :example2 => {
-      :name => 'Example Second',
-      :email_domain => 'example2.com'
-    },
-  }
-
+  
   has_many :employees, :class_name => "User"
 
   define_index do

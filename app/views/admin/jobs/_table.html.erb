@@ -7,7 +7,7 @@
     <th>Employees</th>
   </tr>
   <% items.each do |job| %>
-    <tr>
+    <tr class="<%= 'deactivated' if job.deactivated? %>">
       <td><%= link_to job.name, edit_admin_job_path(job) %></td>
       <td><%= job.department.name %></td>
       <td><%= job.department.location.name %></td>

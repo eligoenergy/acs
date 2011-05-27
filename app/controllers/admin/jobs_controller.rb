@@ -72,14 +72,24 @@ class Admin::JobsController < ApplicationController
     end
   end
 
+  # POST /jobs/1/activate
+  def activate
+    @job = Job.find(params[:job_id])
+    @job.activate!
+    flash[:notice] = "Job successfully activated."
+    respond_to do |format|
+      format.html { redirect_to(edit_admin_job_path(@job)) }
+      format.xml  { head :ok }
+    end
+  end
   # DELETE /jobs/1
   # DELETE /jobs/1.xml
   def destroy
     @job = Job.find(params[:id])
-    @job.destroy
-
+    @job.deactivate!
+    flash[:notice] = "Job successfully deactivated."
     respond_to do |format|
-      format.html { redirect_to(admin_jobs_url) }
+      format.html { redirect_to(edit_admin_job_url(@job)) }
       format.xml  { head :ok }
     end
   end

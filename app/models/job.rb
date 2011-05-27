@@ -1,17 +1,15 @@
 class Job < ActiveRecord::Base
-  belongs_to :department
-  has_and_belongs_to_many :permissions, :uniq => true #, :after_add => :do_this_stuff
-  has_many :users
+  include AASM
   
-  # track_template_changes :permissions
-  # acts_as_change_logger
+  belongs_to :department
+  has_and_belongs_to_many :permissions, :uniq => true
+  has_many :users
+
   acts_as_change_logger :track_templates => [:permissions]
   
   validates_presence_of :name
   validates_uniqueness_of :name, :scope => :department_id
-  validates_presence_of :department_id
-  # before_save :wtf_before
-  # after_save :wtf_after  
+  validates_presence_of :department_id 
   
   define_index do
     indexes :name, :sortable => true
@@ -19,22 +17,32 @@ class Job < ActiveRecord::Base
   end
   
   scope :by_department, includes(:department).order("departments.name asc, jobs.name asc")
-  scope :alphabetical, order("jobs.name asc")
+  scope :alphabetical, order("jobs.name asc")  
+  scope :active, where(:current_state => 'active')
   
-  def do_this_stuff(record)
-    self.changed_permissions = [] if self.changed_permissions.nil?
-    self.changed_permissions << record
+  aasm_column :current_state
+  aasm_initial_state :active
+
+  aasm_state :active
+  aasm_state :deactivated
+
+  aasm_event :deactivate do
+    transitions :from => :active, :to => :deactivated
   end
   
-  def wtf_before
-    logger.info { "\n\n********\n wtf_before: #{self.changed_permissions.inspect}\n********\n\n\n" }
+  aasm_event :activate do
+    transitions :from => :deactivated, :to => :active
   end
-
-  def wtf_after
-    logger.info { "\n\n********\n wtf_after: #{self.permissions.size}\n********\n\n\n" }
-  end
-
+  
   def has_permission_in_resource_group?(resource_group)
     self.permissions.any? {|j| j.permission_type.resource_group == resource_group }
+  end
+  
+  # take the passed in job, combine job templates, move all employees from all to self
+  def combine_with(job)
+    job.users.each do |user|
+      user.update_attribute(:job_id, self.id)
+    end
+    self.permissions = (self.permissions + job.permissions).uniq
   end
 end

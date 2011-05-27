@@ -1,0 +1,42 @@
+    Create access request for my self
+    Create new employees as a manager
+    Import a bunch of new employees via CSV
+    Have a manager of a manager create a request for an individual contributor – See who’s the approver, should be the manager requesting access even though it is for someone two levels below them.
+    Move employee from one P&L call center to a different P&L call center
+    Terminate Employee
+    Rehire and employee
+    Terminate Manager
+    Terminate Resource Owner
+    Promote an employee
+        Approve
+        Reject
+    Promote a manager
+        Approve
+        Reject
+    Move manager to a different department
+    Revoke access from employee
+    Revoke resource owner’s access from a resource they own
+    Resource owner submits an access revoke
+    Manager submits access revoke
+    Create new user – Via CSV, Via Form, Manually
+        Approve request
+        Reject request
+    Add access to existing employee
+        As a manager
+        As the user request for themselves
+        Resource Owner Submits request for access for an employee not directly reporting to them? Do we allow this?
+
+
+
+Feature: hr or manager terminates an employee
+	As a hr member or manager
+	I want to terminate users who no longer work here
+	So that all of their access is revoked
+
+	Scenario: hr terminates a user
+      Given I am logged in as "nott"
+	  And I have the role "hr"
+	  When I go to the admin users page
+      And I want follow "Grouxl, Marc"
+      And I submit the "terminate_user_button" form
+      Then I should see "Dashboard"

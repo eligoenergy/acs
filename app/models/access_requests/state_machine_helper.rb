@@ -8,19 +8,15 @@ module AccessRequests
     end
 
     def created_by_manager_for_new_employee?
-      self.by_manager_for_subordinate? && self.user.new_employee?
+      self.request.created_by_manager_for_subordinate? && self.user.new_employee?
     end
-    
-    def created_for_new_or_rehire_employee_or_termination?
-      ((self.created_by.hr? || self.by_manager_for_subordinate?) && (self.user.new_employee? || self.reason == AccessRequest::REASONS[:termination] || self.reason == AccessRequest::REASONS[:rehire]))
-    end
-    
+        
     def can_go_directly_to_help_desk?
-      self.created_for_new_or_rehire_employee_or_termination? || self.created_by_import || self.created_by_transfer
+      self.request.goes_directly_to_help_desk? || self.created_by_import
     end
     
     def created_by_manager_to_terminate_current_user
-      self.reason == AccessRequest::REASONS[:termination] && by_manager_for_subordinate?
+      self.request.reason == Request::REASONS[:termination] && self.request.created_by_manager_for_subordinate?
 	  end
     
     def resource_has_one_owner?

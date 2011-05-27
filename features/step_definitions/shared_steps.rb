@@ -63,7 +63,6 @@ Then /^the access request "([^"]*)" should be "([^"]*)"$/ do |access_request, st
 end
 
 Then /^the user "([^"]*)" should be "([^"]*)"$/ do |user, state|
-  
   @user ||= begin
     users(user.to_sym)
   rescue
@@ -88,21 +87,32 @@ Then /^there should be (\d+) access request for "([^"]*)"$/ do |number, username
   @access_request = @user.access_requests.not_completed.last
 end
 
-Then /^the access request should request to "([^"]*)"$/ do |request_action|
-  @access_request.request_action.should == request_action
+Then /^the requests access requests should request to "([^"]*)"$/ do |request_action|
+  @request.access_requests.all?{|access_request| access_request.request_action.should == request_action }
 end
 
-Then /^the access request reason should be "([^"]*)"$/ do |reason|
-  @access_request.reason.should == reason
+Then /^the requests access requests should be assigned to "([^"]*)"$/ do |username|
+  user = users(username.to_sym)
+  @request.access_requests.all? {|access_request| access_request.current_worker.should == user }
 end
+
+Then /^the request reason should be "([^"]*)"$/ do |reason|
+  @request.reason.should == reason
+end
+
+Then /^the request state should be "([^"]*)"$/ do |current_state|
+  @request.reload
+  @request.current_state.should == current_state
+end
+
 
 Then /^the access request should be created by the manager of "([^"]*)"$/ do |user|
   @user.login.should == user
   @access_request.created_by.should == @user.manager
 end
 
-Then /^the access request should be created by "([^"]*)"$/ do |user|
-  @access_request.created_by.login.should == user
+Then /^the request should be created by "([^"]*)"$/ do |user|
+  @request.created_by.login.should == user
 end
 
 Then /^the access request should have (\d+) permission request$/ do |number|
@@ -127,15 +137,21 @@ Then /^the permission request should be for "([^"]*)"$/ do |permission|
   @permission_request.permission.should == permission
 end
 
-Then /^the permission request should be approved by "([^"]*)"$/ do |role|
-  @permission_request.send("approved_by_#{role}").should == true
+Then /^all permission requests should be approved by "([^"]*)"$/ do |role|
+  @request.permission_requests.all? {|permission_request| permission_request.send("approved_by_#{role}").should == true }
 end
 
-Then /^the permission request should not be approved by "([^"]*)"$/ do |role|
-  @permission_request.send("approved_by_#{role}").should be_blank
+Then /^all permission requests should not be approved by "([^"]*)"$/ do |role|
+  @request.permission_requests.all? {|permission_request| permission_request.send("approved_by_#{role}").should be_blank }
 end
 
-Given /^I follow the link for "([^"]*)"$/ do |access_request|
+Given /^I follow the link for "([^"]*)"$/ do |request|
+  request = requests(request.to_sym)
+  link_id = "dashboard_request_#{request.id}"
+  click_link(link_id)
+end
+
+Then /^I follow the access request link for "([^"]*)"$/ do |access_request|
   access_request = access_requests(access_request.to_sym)
   link_id = "dashboard_access_request_#{access_request.id}"
   click_link(link_id)
@@ -146,6 +162,7 @@ Given /^I follow the link to user "([^"]*)"$/ do |user|
   link_id = "users_#{@user.id}"
   click_link(link_id)
 end
+
 
 When /^I visit the show access request page for "([^"]*)"$/ do |access_request|
   access_request = access_requests(access_request.to_sym)
@@ -204,6 +221,19 @@ And /^roles$/ do
   puts "* #{Role.find_by_name(Role::ROLES[:help_desk]).inspect}"
   Role.all.each do |role|
     puts role.inspect
+  end
+end
+
+And /^"([^"]*)" requests$/ do |username| #"
+  user = User.find_by_login(username)
+  user.requests.each do |request|
+    puts "#{request.inspect}...#{request.access_requests.size} access requests"
+    request.access_requests.each do |access_request|
+      puts "  * #{access_request.inspect}"
+      access_request.permission_requests.each do |permission_request|
+        puts "    ** #{permission_request.inspect}"
+      end
+    end
   end
 end
 # Webrat relies on the onclick attribute to "fake" HTTP request's
